@@ -8,6 +8,10 @@ import Register from "./pages/Register";
 import UiGuide from "./pages/UiGuide";
 import Dashboard from "./pages/admin/Dashboard";
 import Generos from "./pages/usuarios/Generos";
+import Menus from "./pages/rolesPermisos/Menus";
+import Roles from "./pages/rolesPermisos/Roles";
+import Administradores from "./pages/usuarios/Administradores";
+import Recepcionistas from "./pages/usuarios/Recepcionistas";
 import PatientDashboard from "./pages/portal/PatientDashboard";
 
 function App() {
@@ -35,9 +39,14 @@ function App() {
               {/* Using Generos as placeholders for other sections until pages are built */}
               <Route path="citas" element={<Generos />} />
 
-              {/* Personal (Staff) only for Administrador */}
+              {/* Personal (Staff) and Roles y Permisos only for Administrador */}
               <Route element={<ProtectedRoute allowedRoles={["Administrador"]} />}>
                 <Route path="personal" element={<Generos />} />
+                <Route path="roles-permisos/menus" element={<Menus />} />
+                <Route path="roles-permisos/roles" element={<Roles />} />
+                <Route path="usuarios/generos" element={<Generos />} />
+                <Route path="usuarios/administradores" element={<Administradores />} />
+                <Route path="usuarios/recepcionistas" element={<Recepcionistas />} />
               </Route>
               
               {/* Diagnósticos and Style Guide only for Administrador & Médico */}

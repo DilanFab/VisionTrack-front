@@ -10,6 +10,8 @@ import DataTable from "datatables.net-react";
 import DT from "datatables.net-bs5";
 DataTable.use(DT);
 
+import "./lib/fontawesome";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>

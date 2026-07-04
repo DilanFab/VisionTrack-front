@@ -1,19 +1,36 @@
 import React from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { resolveUsuarioImagenUrl } from "../lib/imagenUsuario";
 
-export const Topbar: React.FC = () => {
+interface TopbarProps {
+  collapsed: boolean;
+  onToggleSidebar: () => void;
+}
+
+export const Topbar: React.FC<TopbarProps> = ({ collapsed, onToggleSidebar }) => {
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
 
   const userName = user?.persona.nombre || "Usuario";
   const userRole = user?.roles[0] || "Miembro del Equipo";
   const userInitial = userName.charAt(0).toUpperCase();
+  const avatarUrl = resolveUsuarioImagenUrl(user?.usuario_imagen);
 
   return (
     <header className="flex justify-between items-center h-16 px-8 bg-surface-container border-b border-outline-variant sticky top-0 z-40">
-      {/* Left: Search */}
+      {/* Left: Sidebar Toggle + Search */}
       <div className="flex items-center gap-4 flex-grow max-w-xl">
+        <button
+          onClick={onToggleSidebar}
+          className="hidden md:inline-flex p-2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+          title={collapsed ? "Expandir menú" : "Colapsar menú"}
+        >
+          <span className="material-symbols-outlined">
+            {collapsed ? "menu_open" : "menu"}
+          </span>
+        </button>
+
         <div className="relative w-full">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
             search
@@ -53,12 +70,12 @@ export const Topbar: React.FC = () => {
             <p className="text-[13px] font-semibold text-on-surface leading-none">{userName}</p>
             <p className="text-[10px] text-outline uppercase tracking-widest font-bold mt-1">{userRole}</p>
           </div>
-          {user?.usuario_imagen && user.usuario_imagen !== "default.png" ? (
+          {avatarUrl ? (
             <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
               <img
                 className="w-full h-full object-cover"
                 alt={`Avatar de ${userName}`}
-                src={user.usuario_imagen}
+                src={avatarUrl}
               />
             </div>
           ) : (

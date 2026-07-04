@@ -119,6 +119,39 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/*
+ * Puente de variables de Bootstrap 5 (usadas por react-bootstrap y por
+ * datatables.net-bs5: tabla, input de búsqueda, selector de "mostrar N
+ * registros" y paginación) hacia la paleta Material de la app, para que
+ * respeten el modo claro/oscuro en vez de los colores fijos de Bootstrap.
+ * Se activan junto con el atributo data-bs-theme (ver ThemeContext).
+ */
+.light {
+  --bs-body-color: var(--on-surface);
+  --bs-body-bg: var(--surface-container-low);
+  --bs-emphasis-color: var(--on-surface);
+  --bs-border-color: var(--outline-variant);
+  --bs-secondary-color: var(--on-surface-variant);
+  --bs-secondary-bg: var(--surface-container);
+  --bs-tertiary-bg: var(--surface-container-high);
+  --bs-tertiary-color: var(--on-surface-variant);
+  --bs-link-color: var(--primary);
+  --bs-link-hover-color: var(--primary-container);
+}
+
+.dark {
+  --bs-body-color: var(--on-surface);
+  --bs-body-bg: var(--surface-container-low);
+  --bs-emphasis-color: var(--on-surface);
+  --bs-border-color: var(--outline-variant);
+  --bs-secondary-color: var(--on-surface-variant);
+  --bs-secondary-bg: var(--surface-container);
+  --bs-tertiary-bg: var(--surface-container-high);
+  --bs-tertiary-color: var(--on-surface-variant);
+  --bs-link-color: var(--primary);
+  --bs-link-hover-color: var(--primary-container);
+}
+
 .glass-card {
   backdrop-filter: blur(12px);
   background: rgba(30, 41, 59, 0.4);

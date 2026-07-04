@@ -1,18 +1,30 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
 import { Topbar } from "../components/Topbar";
 
 export const AdminLayout: React.FC = () => {
+  const [collapsed, setCollapsed] = useState<boolean>(
+    () => localStorage.getItem("sidebarCollapsed") === "true"
+  );
+
+  useEffect(() => {
+    localStorage.setItem("sidebarCollapsed", String(collapsed));
+  }, [collapsed]);
+
   return (
     <div className="min-h-screen bg-background text-on-surface font-body-md overflow-x-hidden flex">
       {/* Navigation Sidebar */}
-      <Sidebar />
+      <Sidebar collapsed={collapsed} />
 
       {/* Main Content Area */}
-      <div className="flex-1 md:ml-[280px] min-h-screen flex flex-col">
+      <div
+        className={`flex-1 min-h-screen flex flex-col sidebar-transition ${
+          collapsed ? "md:ml-[88px]" : "md:ml-[280px]"
+        }`}
+      >
         {/* Header Navigation Bar */}
-        <Topbar />
+        <Topbar collapsed={collapsed} onToggleSidebar={() => setCollapsed((prev) => !prev)} />
 
         {/* Dynamic Nested Content Canvas */}
         <main className="flex-grow p-8 bg-background relative overflow-hidden">
