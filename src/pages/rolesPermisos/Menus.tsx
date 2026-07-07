@@ -261,8 +261,12 @@ export default function Menus() {
                 maxLength={500}
                 value={form.menu_referencia}
                 onChange={(e) => setForm({ ...form, menu_referencia: e.target.value })}
-                placeholder="Ej. /admin/dashboard"
+                placeholder="Ej. /medicos/doctores"
               />
+              <Form.Text muted>
+                Ruta relativa a la sección, sin el prefijo <code>/admin</code> o <code>/portal</code>:
+                el Sidebar lo antepone automáticamente según el perfil del usuario.
+              </Form.Text>
             </Form.Group>
             {editingId && (
               <Form.Group className="mb-3">

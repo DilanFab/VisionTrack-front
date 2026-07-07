@@ -8,7 +8,7 @@ import { getPermisos } from "../api/rolesPermisos/permisoService";
 import type { Menu } from "../types/rolesPermisos/Menu";
 import type { Rol } from "../types/rolesPermisos/Rol";
 import type { Permiso } from "../types/rolesPermisos/Permiso";
-import { buildMenuTree, type MenuNode } from "../lib/menuTree";
+import { buildMenuTree, collectIds, getAncestorIds, type MenuNode } from "../lib/menuTree";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { findIconDefinition } from "@fortawesome/fontawesome-svg-core";
 import type { IconDefinition, IconName } from "@fortawesome/fontawesome-svg-core";
@@ -30,7 +30,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   const [menus, setMenus] = useState<Menu[]>([]);
   const [roles, setRoles] = useState<Rol[]>([]);
   const [permisos, setPermisos] = useState<Permiso[]>([]);
-  const [collapsedGroupIds, setCollapsedGroupIds] = useState<Set<number>>(new Set());
+  // Vacío por defecto: todos los grupos del menú arrancan cerrados. Acordeón
+  // global: solo una rama (de raíz a hoja) puede estar abierta a la vez, así
+  // que abrir cualquier grupo cierra todo lo demás salvo sus propios ancestros
+  // (para poder desplegar submenús anidados, ej. Personas -> Usuarios, sin
+  // cerrar al padre en el camino).
+  const [expandedGroupIds, setExpandedGroupIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     (async () => {
@@ -71,22 +76,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
     [permisos, rolIdsDelUsuario]
   );
 
-  const menuTree = useMemo(() => {
-    const visibles = menus.filter(
-      (m) => m.menu_estado === "A" && menuIdsPermitidos.has(m.menu_id)
-    );
-    return buildMenuTree(visibles);
-  }, [menus, menuIdsPermitidos]);
+  const menusVisibles = useMemo(
+    () => menus.filter((m) => m.menu_estado === "A" && menuIdsPermitidos.has(m.menu_id)),
+    [menus, menuIdsPermitidos]
+  );
 
-  const toggleGroup = (menuId: number) => {
-    setCollapsedGroupIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(menuId)) {
-        next.delete(menuId);
-      } else {
-        next.add(menuId);
+  const menuTree = useMemo(() => buildMenuTree(menusVisibles), [menusVisibles]);
+
+  const menusPorId = useMemo(
+    () => new Map(menusVisibles.map((m) => [m.menu_id, m])),
+    [menusVisibles]
+  );
+
+  const toggleGroup = (node: MenuNode) => {
+    setExpandedGroupIds((prev) => {
+      if (prev.has(node.menu_id)) {
+        // Al cerrar un grupo, también se cierran sus descendientes para que no
+        // queden abiertos "de fantasma" la próxima vez que se despliegue.
+        const next = new Set(prev);
+        collectIds(node).forEach((id) => next.delete(id));
+        return next;
       }
-      return next;
+      // Al abrir, solo quedan abiertos los ancestros del grupo (para mantener
+      // visible el camino hasta él) y el propio grupo; cualquier otra rama
+      // abierta en cualquier parte del árbol se cierra.
+      return new Set([...getAncestorIds(node.menu_id, menusPorId), node.menu_id]);
     });
   };
 
@@ -98,6 +112,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
         ? "text-primary font-bold border-r-2 border-primary bg-surface-variant/30"
         : "text-on-surface-variant hover:bg-surface-variant"
     }`;
+
+  // `menu_referencia` en BD se guarda relativo a la sección (ej. "/medicos/doctores"),
+  // sin el prefijo de layout, para que el mismo registro sirva sin importar bajo
+  // qué sección navegue el perfil del usuario (panel administrativo o portal).
+  const basePath = hasRole("Paciente") ? "/portal" : "/admin";
+  const resolveRuta = (referencia: string) => `${basePath}${referencia}`;
 
   // En el rail colapsado el ícono es la única pista visual disponible, así que
   // siempre se muestra algo (con "?" atenuado si falta o no se reconoce).
@@ -121,7 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
     <React.Fragment key={node.menu_id}>
       {node.menu_referencia && (
         <NavLink
-          to={node.menu_referencia}
+          to={resolveRuta(node.menu_referencia)}
           className={({ isActive }) => navClass(isActive)}
           title={node.menu_nombre}
         >
@@ -156,7 +176,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
       return (
         <NavLink
           key={node.menu_id}
-          to={node.menu_referencia}
+          to={resolveRuta(node.menu_referencia)}
           className={({ isActive }) => navClass(isActive)}
           style={style}
         >
@@ -166,20 +186,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
       );
     }
 
-    const isCollapsedGroup = collapsedGroupIds.has(node.menu_id);
+    const isExpanded = expandedGroupIds.has(node.menu_id);
     return (
       <div key={node.menu_id}>
         <button
           type="button"
-          onClick={() => toggleGroup(node.menu_id)}
+          onClick={() => toggleGroup(node)}
           className="w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-all text-on-surface-variant hover:bg-surface-variant cursor-pointer bg-transparent border-none text-left"
           style={style}
         >
           {renderIconExpanded(node)}
           <span className="font-medium flex-grow">{node.menu_nombre}</span>
-          <FontAwesomeIcon icon={isCollapsedGroup ? faChevronRight : faChevronDown} size="xs" />
+          <FontAwesomeIcon icon={isExpanded ? faChevronDown : faChevronRight} size="xs" />
         </button>
-        {!isCollapsedGroup && (
+        {isExpanded && (
           <div className="space-y-2 mt-2">
             {node.hijos.map((hijo) => renderExpandedNode(hijo, depth + 1))}
           </div>

@@ -1,0 +1,14 @@
+.horario-doctor-calendario .fc-col-header-cell-cushion {
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+.horario-doctor-calendario .fc-timegrid-axis-cushion,
+.horario-doctor-calendario .fc-timegrid-slot-label-cushion {
+  color: #ffffff !important;
+}
+
+.horario-doctor-calendario .fc-theme-standard td,
+.horario-doctor-calendario .fc-theme-standard th {
+  border-color: var(--outline-variant);
+}

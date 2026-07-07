@@ -12,6 +12,11 @@ import Menus from "./pages/rolesPermisos/Menus";
 import Roles from "./pages/rolesPermisos/Roles";
 import Administradores from "./pages/usuarios/Administradores";
 import Recepcionistas from "./pages/usuarios/Recepcionistas";
+import EspecialidadesMedicas from "./pages/medicos/EspecialidadesMedicas";
+import Doctores from "./pages/medicos/Doctores";
+import EstadoCitas from "./pages/citas/EstadoCitas";
+import Pacientes from "./pages/citas/Pacientes";
+import Citas from "./pages/citas/Citas";
 import PatientDashboard from "./pages/portal/PatientDashboard";
 
 function App() {
@@ -35,9 +40,9 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={["Administrador", "Médico", "Recepcionista"]} />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="pacientes" element={<Generos />} />
+              <Route path="usuarios/pacientes" element={<Pacientes />} />
               {/* Using Generos as placeholders for other sections until pages are built */}
-              <Route path="citas" element={<Generos />} />
+              <Route path="citas" element={<Citas />} />
 
               {/* Personal (Staff) and Roles y Permisos only for Administrador */}
               <Route element={<ProtectedRoute allowedRoles={["Administrador"]} />}>
@@ -47,6 +52,9 @@ function App() {
                 <Route path="usuarios/generos" element={<Generos />} />
                 <Route path="usuarios/administradores" element={<Administradores />} />
                 <Route path="usuarios/recepcionistas" element={<Recepcionistas />} />
+                <Route path="medicos/especialidades" element={<EspecialidadesMedicas />} />
+                <Route path="medicos/doctores" element={<Doctores />} />
+                <Route path="citas/estados" element={<EstadoCitas />} />
               </Route>
               
               {/* Diagnósticos and Style Guide only for Administrador & Médico */}

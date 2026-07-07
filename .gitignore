@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Fotos de pacientes subidas por el backend (ver VisionTrack-api/src/middlewares/upload.ts)
+/public/pacientes/*
+!/public/pacientes/.gitkeep
