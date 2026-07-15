@@ -157,7 +157,7 @@ export default function Menus() {
           options={{ language: idiomaEspanol }}
           slots={{
             1: (_data: unknown, row: Menu) =>
-              menus.find((m) => m.menu_id === row.menu_padre)?.menu_nombre || "—",
+              <>{menus.find((m) => m.menu_id === row.menu_padre)?.menu_nombre || "—"}</>,
             3: (_data: unknown, row: Menu) => {
               const icon = resolveIcon(row.menu_icono);
               return (
@@ -167,7 +167,7 @@ export default function Menus() {
                 </span>
               );
             },
-            4: (_data: unknown, row: Menu) => row.menu_referencia || "—",
+            4: (_data: unknown, row: Menu) => <>{row.menu_referencia || "—"}</>,
             5: (_data: unknown, row: Menu) => (
               <Badge bg={row.menu_estado === "A" ? "success" : "secondary"}>
                 {row.menu_estado === "A" ? "Activo" : "Inactivo"}

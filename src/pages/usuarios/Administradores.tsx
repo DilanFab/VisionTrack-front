@@ -315,8 +315,8 @@ export default function Administradores() {
           className="table table-striped table-bordered"
           options={{ language: idiomaEspanol }}
           slots={{
-            1: (_data: unknown, row: UsuarioCompleto) => row.persona.persona_cedula,
-            2: (_data: unknown, row: UsuarioCompleto) => nombreCompleto(row.persona),
+            1: (_data: unknown, row: UsuarioCompleto) => <>{row.persona.persona_cedula}</>,
+            2: (_data: unknown, row: UsuarioCompleto) => <>{nombreCompleto(row.persona)}</>,
             3: (_data: unknown, row: UsuarioCompleto) => (
               <>
                 {row.perfiles.map((p) => (

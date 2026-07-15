@@ -300,9 +300,9 @@ export default function Doctores() {
           className="table table-striped table-bordered"
           options={{ language: idiomaEspanol }}
           slots={{
-            1: (_data: unknown, row: Doctor) => row.perfil.usuario.persona.persona_cedula,
-            2: (_data: unknown, row: Doctor) => nombreCompleto(row.perfil.usuario.persona),
-            3: (_data: unknown, row: Doctor) => row.especialidad_medica.especialidad_medica_nombre,
+            1: (_data: unknown, row: Doctor) => <>{row.perfil.usuario.persona.persona_cedula}</>,
+            2: (_data: unknown, row: Doctor) => <>{nombreCompleto(row.perfil.usuario.persona)}</>,
+            3: (_data: unknown, row: Doctor) => <>{row.especialidad_medica.especialidad_medica_nombre}</>,
             4: (_data: unknown, row: Doctor) => (
               <Badge bg={row.doctor_estado === "A" ? "success" : "secondary"}>
                 {row.doctor_estado === "A" ? "Activo" : "Inactivo"}

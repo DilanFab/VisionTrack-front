@@ -17,6 +17,7 @@ import { idiomaEspanol } from "../../lib/datatableEsLang";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { confirmarEliminacion, mostrarExito, mostrarError } from "../../lib/alerts";
+import PaginationBar from "../../components/PaginationBar";
 
 const initialForm = {
   historia_clinica_id: "",
@@ -52,6 +53,10 @@ export default function Citas() {
   const [estadosCita, setEstadosCita] = useState<EstadoCita[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [total, setTotal] = useState(0);
+  const LIMITE = 20;
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -65,19 +70,23 @@ export default function Citas() {
   const [horariosDoctor, setHorariosDoctor] = useState<HorarioDoctor[]>([]);
   const [cargandoHorarios, setCargandoHorarios] = useState(false);
 
-  const cargarDatos = async () => {
+  const cargarDatos = async (pagina?: number) => {
     try {
       setLoading(true);
       setError("");
+      const pg = pagina ?? page;
       const [citasData, doctoresData, pacientesData, estadosData] = await Promise.all([
-        getCitas(),
+        getCitas({ page: pg, limit: LIMITE }),
         getDoctoresCompletos(),
-        getPacientesCompletos(),
+        getPacientesCompletos({ limit: 100 }),
         getEstadosCita(),
       ]);
-      setCitas(citasData);
+      setCitas(citasData.data);
+      setPage(citasData.pagination.page);
+      setTotalPages(citasData.pagination.totalPages);
+      setTotal(citasData.pagination.total);
       setDoctores(doctoresData);
-      setPacientes(pacientesData);
+      setPacientes(pacientesData.data);
       setEstadosCita(estadosData);
     } catch {
       setError("No se pudo conectar con la API. Verifica que el backend esté corriendo.");
@@ -87,7 +96,7 @@ export default function Citas() {
   };
 
   useEffect(() => {
-    cargarDatos();
+    cargarDatos(1);
   }, []);
 
   const pacientesFiltrados = useMemo(() => {
@@ -154,6 +163,10 @@ export default function Citas() {
     setBuscarPaciente("");
     setBuscarDoctor("");
     setShowModal(true);
+  };
+
+  const handlePageChange = (nuevaPagina: number) => {
+    cargarDatos(nuevaPagina);
   };
 
   const handleEditar = async (row: Cita) => {
@@ -284,15 +297,16 @@ export default function Citas() {
       {loading ? (
         <Spinner animation="border" />
       ) : (
+        <>
         <DataTable
           data={citas}
           columns={columns}
           className="table table-striped table-bordered"
-          options={{ language: idiomaEspanol }}
+          options={{ language: idiomaEspanol, paging: false }}
           slots={{
-            0: (_data: unknown, row: Cita) => nombreCompleto(row.horario_doctor.doctor.perfil.usuario.persona),
-            1: (_data: unknown, row: Cita) => nombreCompleto(row.historia_clinica.perfil.usuario.persona),
-            2: (_data: unknown, row: Cita) => formatFechaHora(row),
+            0: (_data: unknown, row: Cita) => <>{nombreCompleto(row.horario_doctor.doctor.perfil.usuario.persona)}</>,
+            1: (_data: unknown, row: Cita) => <>{nombreCompleto(row.historia_clinica.perfil.usuario.persona)}</>,
+            2: (_data: unknown, row: Cita) => <>{formatFechaHora(row)}</>,
             3: (_data: unknown, row: Cita) => (
               <Badge bg={row.estado_cita.estado_cita_nombre === "Cancelada" ? "secondary" : "success"}>
                 {row.estado_cita.estado_cita_nombre}
@@ -320,6 +334,14 @@ export default function Citas() {
             </tr>
           </thead>
         </DataTable>
+        <PaginationBar
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          limit={LIMITE}
+          onPageChange={handlePageChange}
+        />
+        </>
       )}
 
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" scrollable>
