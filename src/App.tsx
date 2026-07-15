@@ -18,6 +18,7 @@ import EstadoCitas from "./pages/citas/EstadoCitas";
 import Pacientes from "./pages/citas/Pacientes";
 import Citas from "./pages/citas/Citas";
 import PatientDashboard from "./pages/portal/PatientDashboard";
+import Unauthorized from "./pages/Unauthorized";
 
 function App() {
   return (
@@ -70,6 +71,9 @@ function App() {
               </Route>
             </Route>
           </Route>
+
+          {/* Unauthorized page */}
+          <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* Fallback wildcard redirect */}
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />

@@ -29,22 +29,23 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
   }
 
   if (allowedRoles && user) {
-    const hasAllowedRole = user.roles.some((role) => allowedRoles.includes(role));
+    const userRoles = user.roles ?? [];
+    const hasAllowedRole = userRoles.some((role) => allowedRoles.includes(role));
     if (!hasAllowedRole) {
       // If user is a Patient, redirect them to the Patient Portal
-      if (user.roles.includes("Paciente")) {
+      if (userRoles.includes("Paciente")) {
         return <Navigate to="/portal" replace />;
       }
       
       // If user has administrative access, redirect to the Admin Dashboard
-      const hasAdminAccess = user.roles.some(
+      const hasAdminAccess = userRoles.some(
         (r) => r === "Administrador" || r === "Médico" || r === "Recepcionista"
       );
       if (hasAdminAccess) {
         return <Navigate to="/admin/dashboard" replace />;
       }
       
-      return <Navigate to="/login" replace />;
+      return <Navigate to="/unauthorized" replace />;
     }
   }
 

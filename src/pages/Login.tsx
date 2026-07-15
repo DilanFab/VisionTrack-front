@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import logoImg from "../assets/logo.svg"; // Cambia a .png si convertiste a PNG
@@ -19,22 +19,6 @@ const Login: React.FC = () => {
 
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated && user && status === "idle") {
-      const hasAdminAccess = user.roles.some(
-        (r) => r === "Administrador" || r === "Médico" || r === "Recepcionista"
-      );
-      if (hasAdminAccess) {
-        navigate("/admin/dashboard", { replace: true });
-      } else if (user.roles.includes("Paciente")) {
-        navigate("/portal", { replace: true });
-      } else {
-        navigate("/unauthorized", { replace: true });
-      }
-    }
-  }, [isAuthenticated, user, status, navigate]);
-
   // Subtle Mouse parallax/tilt effect for premium feeling
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -50,6 +34,21 @@ const Login: React.FC = () => {
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
+
+  // Redirect if already authenticated
+  if (isAuthenticated && user) {
+    const userRoles = user.roles ?? [];
+    const hasAdminAccess = userRoles.some(
+      (r) => r === "Administrador" || r === "Médico" || r === "Recepcionista"
+    );
+    if (hasAdminAccess) {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
+    if (userRoles.includes("Paciente")) {
+      return <Navigate to="/portal" replace />;
+    }
+    return <Navigate to="/unauthorized" replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,7 +1,8 @@
 import api from "./axios";
 
 export interface LoginResponse {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
   usuario: {
     usuario_id: number;
     usuario_nombre: string;
