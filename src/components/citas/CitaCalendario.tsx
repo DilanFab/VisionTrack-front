@@ -40,9 +40,13 @@ const DIA_POR_INDICE: Record<number, DiaSemana> = {
   5: "Viernes",
 };
 
+// Los @db.Time llegan como ISO con fecha ficticia 1970-01-01Z: la hora debe
+// leerse en UTC (getUTCHours), no con getHours(), que aplicaría la zona
+// horaria del navegador y correría la hora (y rompería la comparación en
+// handleDateClick para zonas con offset distinto de 0).
 const horaLocal = (iso: string) => {
   const d = new Date(iso);
-  return { horas: d.getHours(), minutos: d.getMinutes() };
+  return { horas: d.getUTCHours(), minutos: d.getUTCMinutes() };
 };
 
 const formatHora = (iso: string) => {

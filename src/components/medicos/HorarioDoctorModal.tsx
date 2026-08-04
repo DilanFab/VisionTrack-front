@@ -63,8 +63,11 @@ export default function HorarioDoctorModal({ show, onHide, doctor }: Props) {
             const fechaBase = FECHA_POR_DIA[h.horario_doctor_dia];
             const inicio = new Date(h.horario_doctor_inicio);
             const fin = new Date(h.horario_doctor_fin);
-            const start = construirFechaLocal(fechaBase, inicio.getHours(), inicio.getMinutes());
-            const end = construirFechaLocal(fechaBase, fin.getHours(), fin.getMinutes());
+            // Los @db.Time llegan como ISO con fecha ficticia 1970-01-01Z: la hora
+            // se debe leer en UTC (getUTCHours), no con getHours(), que aplicaría
+            // la zona horaria del navegador y correría la hora mostrada.
+            const start = construirFechaLocal(fechaBase, inicio.getUTCHours(), inicio.getUTCMinutes());
+            const end = construirFechaLocal(fechaBase, fin.getUTCHours(), fin.getUTCMinutes());
             return {
               id: `${h.horario_doctor_dia}-${start.getHours()}`,
               start,
