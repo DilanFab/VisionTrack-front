@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { findIconDefinition } from "@fortawesome/fontawesome-svg-core";
 import type { IconDefinition, IconName } from "@fortawesome/fontawesome-svg-core";
 import { faQuestion, faChevronRight, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { hasAdminRole, hasDoctorRole, hasReceptionistRole, isAdminPathAllowed } from "../lib/roleCapabilities";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -36,7 +37,7 @@ const isPatientPortalNode = (node: MenuNode) => {
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed, section, mobileOpen = false, onClose }) => {
-  const { logout, hasRole } = useAuth();
+  const { logout, hasRole, user } = useAuth();
 
   const [menus, setMenus] = useState<Menu[]>([]);
   // Vacío por defecto: todos los grupos del menú arrancan cerrados. Acordeón
@@ -63,14 +64,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, section, mobileOpen
   );
 
   const menuTree = useMemo(() => {
+    const filtrarNodoPorRol = (node: MenuNode): MenuNode | null => {
+      const hijos = node.hijos.map(filtrarNodoPorRol).filter((hijo): hijo is MenuNode => Boolean(hijo));
+      const referenciaPermitida = !node.menu_referencia || isAdminPathAllowed(node.menu_referencia, user?.roles);
+      if (!referenciaPermitida && hijos.length === 0) return null;
+      return { ...node, hijos };
+    };
+
     const tree = buildMenuTree(menusVisibles);
     if (section === "admin") {
-      return tree.filter((node) => !isPatientPortalNode(node));
+      return tree
+        .filter((node) => !isPatientPortalNode(node))
+        .map(filtrarNodoPorRol)
+        .filter((node): node is MenuNode => Boolean(node));
     }
 
     const patientRoots = tree.filter(isPatientPortalNode);
     return patientRoots.length > 0 ? patientRoots : tree;
-  }, [menusVisibles, section]);
+  }, [menusVisibles, section, user?.roles]);
 
   const menusPorId = useMemo(
     () => new Map(menusVisibles.map((m) => [m.menu_id, m])),
@@ -200,6 +211,30 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, section, mobileOpen
     );
   };
 
+
+  const staffQuickLinks = useMemo(() => {
+    if (section !== "admin") return [];
+    if (hasDoctorRole(user?.roles)) {
+      return [
+        { to: "/admin/citas", label: "Mis citas", icon: "calendar_month" },
+        { to: "/admin/historial", label: "Historias clínicas", icon: "clinical_notes" },
+      ];
+    }
+    if (hasReceptionistRole(user?.roles) && !hasAdminRole(user?.roles)) {
+      return [
+        { to: "/admin/citas", label: "Gestión de citas", icon: "event_available" },
+        { to: "/admin/usuarios/pacientes", label: "Pacientes", icon: "groups" },
+      ];
+    }
+    if (hasAdminRole(user?.roles)) {
+      return [
+        { to: "/admin/dashboard", label: "Supervisión", icon: "dashboard" },
+        { to: "/admin/historial", label: "Supervisión clínica", icon: "clinical_notes" },
+      ];
+    }
+    return [];
+  }, [section, user?.roles]);
+
   return (
     <>
       {mobileOpen && (
@@ -244,6 +279,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, section, mobileOpen
       {/* Navigation Tabs (dinámico según tbl_menu / tbl_permiso / roles del usuario) */}
       <nav className={`flex-grow min-h-0 overflow-y-auto space-y-2 ${collapsed ? "px-2" : "px-4"}`}>
         {collapsed ? menuTree.map(renderCollapsedNode) : menuTree.map(renderTitulo)}
+
+        {staffQuickLinks.length > 0 && !collapsed && (
+          <div className="pt-3 mt-3 border-t border-outline-variant/70 space-y-2">
+            <div className="px-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-outline select-none">
+              Accesos por rol
+            </div>
+            {staffQuickLinks.map((link) => (
+              <NavLink key={link.to} to={link.to} className={({ isActive }) => navClass(isActive)} onClick={onClose}>
+                <SymbolIcon name={link.icon} />
+                <span className="font-medium">{link.label}</span>
+              </NavLink>
+            ))}
+          </div>
+        )}
+        {staffQuickLinks.length > 0 && collapsed && staffQuickLinks.map((link) => (
+          <NavLink key={link.to} to={link.to} className={({ isActive }) => navClass(isActive)} title={link.label} aria-label={link.label} onClick={onClose}>
+            <SymbolIcon name={link.icon} />
+          </NavLink>
+        ))}
 
         {/* Guía de Estilos - herramienta de desarrollo, no forma parte de tbl_menu */}
         {(hasRole("Administrador") || hasRole("Médico")) && (

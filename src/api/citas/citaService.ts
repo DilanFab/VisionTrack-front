@@ -3,8 +3,13 @@ import type { Cita, CitaPayload } from "../../types/citas/Cita";
 
 const BASE_URL = "/api/citas";
 
-export const getCitas = async (): Promise<Cita[]> => {
-  const { data } = await api.get<Cita[]>(BASE_URL);
+export const getCitas = async (params?: { doctor_id?: number; fecha?: string; estado_cita_id?: number }): Promise<Cita[]> => {
+  const { data } = await api.get<Cita[] | { data: Cita[] }>(BASE_URL, { params });
+  return Array.isArray(data) ? data : data.data;
+};
+
+export const getCita = async (id: number): Promise<Cita> => {
+  const { data } = await api.get<Cita>(`${BASE_URL}/${id}`);
   return data;
 };
 

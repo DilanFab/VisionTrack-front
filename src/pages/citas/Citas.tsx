@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import DataTable from "datatables.net-react";
+import { Link } from "react-router-dom";
 import { Button, Modal, Form, Badge, Spinner, Alert } from "react-bootstrap";
 import { getCitas, createCita, updateCita, deleteCita } from "../../api/citas/citaService";
 import { getDoctoresCompletos } from "../../api/medicos/doctorCompletoService";
@@ -17,6 +18,8 @@ import { idiomaEspanol } from "../../lib/datatableEsLang";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { confirmarEliminacion, mostrarExito, mostrarError } from "../../lib/alerts";
+import { useAuth } from "../../context/useAuth";
+import { can, hasDoctorRole, canReadClinicalSupervision } from "../../lib/roleCapabilities";
 
 const initialForm = {
   historia_clinica_id: "",
@@ -46,6 +49,7 @@ const formatFechaHora = (cita: Cita) => {
 };
 
 export default function Citas() {
+  const { user } = useAuth();
   const [citas, setCitas] = useState<Cita[]>([]);
   const [doctores, setDoctores] = useState<Doctor[]>([]);
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
@@ -89,6 +93,19 @@ export default function Citas() {
   useEffect(() => {
     void Promise.resolve().then(cargarDatos);
   }, []);
+
+  const puedeGestionarCitas = can(user?.roles, "appointments:manage");
+  const esDoctorOptometra = hasDoctorRole(user?.roles);
+  const modoSupervisor = canReadClinicalSupervision(user?.roles);
+
+  const citasVisibles = useMemo(() => {
+    if (!esDoctorOptometra) return citas;
+    return citas.filter((cita) => cita.horario_doctor.doctor.perfil.usuario.usuario_id === user?.usuario_id);
+  }, [citas, esDoctorOptometra, user?.usuario_id]);
+
+  const advertenciaFiltroDoctor = esDoctorOptometra && citas.some((cita) => cita.horario_doctor.doctor.perfil.usuario.usuario_id === undefined)
+    ? "La API de citas no garantiza filtro por Doctor/Optómetra autenticado; se requiere soporte backend para seguridad completa."
+    : "";
 
   const pacientesFiltrados = useMemo(() => {
     const q = buscarPaciente.trim().toLowerCase();
@@ -146,6 +163,10 @@ export default function Citas() {
   };
 
   const handleNuevo = () => {
+    if (!puedeGestionarCitas) {
+      mostrarError("Tu rol no puede agendar citas desde esta vista.");
+      return;
+    }
     setEditingId(null);
     setForm(initialForm);
     setPacienteInfo(null);
@@ -157,6 +178,10 @@ export default function Citas() {
   };
 
   const handleEditar = async (row: Cita) => {
+    if (!puedeGestionarCitas) {
+      mostrarError("Tu rol no puede editar citas.");
+      return;
+    }
     const pacientePersona = row.historia_clinica.perfil.usuario.persona;
     const doctorPersona = row.horario_doctor.doctor.perfil.usuario.persona;
 
@@ -183,6 +208,10 @@ export default function Citas() {
   };
 
   const handleEliminar = async (id: number) => {
+    if (!puedeGestionarCitas) {
+      mostrarError("Tu rol no puede cancelar citas.");
+      return;
+    }
     const confirmado = await confirmarEliminacion("La cita se cancelará.");
     if (!confirmado) return;
 
@@ -221,6 +250,10 @@ export default function Citas() {
   };
 
   const handleGuardar = async () => {
+    if (!puedeGestionarCitas) {
+      mostrarError("Tu rol no puede guardar citas.");
+      return;
+    }
     if (
       !form.historia_clinica_id ||
       !form.horario_doctor_id ||
@@ -268,11 +301,16 @@ export default function Citas() {
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3>Citas</h3>
-        <Button variant="primary" onClick={handleNuevo}>
-          <FontAwesomeIcon icon={faPlus} className="me-2" />
-          Agregar Cita
-        </Button>
+        <div>
+          <h3>{esDoctorOptometra ? "Mis citas" : "Citas"}</h3>
+          {modoSupervisor && <p className="text-muted small mb-0">Vista de supervisión: sin operación clínica directa.</p>}
+        </div>
+        {puedeGestionarCitas && (
+          <Button variant="primary" onClick={handleNuevo}>
+            <FontAwesomeIcon icon={faPlus} className="me-2" />
+            Agregar Cita
+          </Button>
+        )}
       </div>
 
       {error && (
@@ -281,11 +319,13 @@ export default function Citas() {
         </Alert>
       )}
 
+      {advertenciaFiltroDoctor && <Alert variant="warning">{advertenciaFiltroDoctor}</Alert>}
+
       {loading ? (
         <Spinner animation="border" />
       ) : (
         <DataTable
-          data={citas}
+          data={citasVisibles}
           columns={columns}
           className="table table-striped table-bordered"
           options={{ language: idiomaEspanol }}
@@ -299,14 +339,24 @@ export default function Citas() {
               </Badge>
             ),
             4: (_data: unknown, row: Cita) => (
-              <>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
-                  <FontAwesomeIcon icon={faPen} />
-                </Button>
-                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.cita_id)}>
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
-              </>
+              <div className="d-flex flex-wrap gap-2">
+                {puedeGestionarCitas && (
+                  <>
+                    <Button size="sm" variant="warning" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
+                      <FontAwesomeIcon icon={faPen} />
+                    </Button>
+                    <Button size="sm" variant="danger" title="Cancelar" aria-label="Cancelar cita" onClick={() => handleEliminar(row.cita_id)}>
+                      <FontAwesomeIcon icon={faTrash} />
+                    </Button>
+                  </>
+                )}
+                {esDoctorOptometra && row.estado_cita.estado_cita_nombre !== "Cancelada" && (
+                  <Link className="btn btn-sm btn-outline-primary" to={`/admin/citas/${row.cita_id}/examen/nuevo`}>
+                    Iniciar examen
+                  </Link>
+                )}
+                {!puedeGestionarCitas && !esDoctorOptometra && <span className="text-muted small">Solo lectura</span>}
+              </div>
             ),
           }}
         >

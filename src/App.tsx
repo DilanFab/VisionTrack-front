@@ -18,6 +18,10 @@ import Doctores from "./pages/medicos/Doctores";
 import EstadoCitas from "./pages/citas/EstadoCitas";
 import Pacientes from "./pages/citas/Pacientes";
 import Citas from "./pages/citas/Citas";
+import HistoriasClinicas from "./pages/historias/HistoriasClinicas";
+import HistoriaClinicaDetalle from "./pages/historias/HistoriaClinicaDetalle";
+import ExamenOptometricoForm from "./pages/examenes/ExamenOptometricoForm";
+import ExamenOptometricoDetalle from "./pages/examenes/ExamenOptometricoDetalle";
 import PatientDashboard from "./pages/portal/PatientDashboard";
 import PatientAppointments from "./pages/portal/PatientAppointments";
 import PatientScheduleAppointment from "./pages/portal/PatientScheduleAppointment";
@@ -52,8 +56,6 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={["Administrador", "Médico", "Recepcionista"]} />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="usuarios/pacientes" element={<Pacientes />} />
-              {/* Using Generos as placeholders for other sections until pages are built */}
               <Route path="citas" element={<Citas />} />
 
               {/* Personal (Staff) and Roles y Permisos only for Administrador */}
@@ -69,14 +71,24 @@ function App() {
                 <Route path="citas/estados" element={<EstadoCitas />} />
               </Route>
               
-              {/* Diagnósticos and Style Guide only for Administrador & Médico */}
+              {/* Historias y supervisión clínica para Administrador y Doctor/Optómetra */}
               <Route element={<ProtectedRoute allowedRoles={["Administrador", "Médico"]} />}>
-                <Route path="historial" element={<Generos />} />
+                <Route path="historial" element={<HistoriasClinicas />} />
+                <Route path="historial/:historiaId" element={<HistoriaClinicaDetalle />} />
+                <Route path="historial/:historiaId/examenes/:examenId" element={<ExamenOptometricoDetalle />} />
                 <Route path="ui-guide" element={<UiGuide />} />
               </Route>
 
-              {/* Inventario and Facturación only for Administrador & Recepcionista */}
+              {/* Operación clínica solo para Doctor/Optómetra */}
+              <Route element={<ProtectedRoute allowedRoles={["Médico"]} />}>
+                <Route path="historial/:historiaId/examenes/nuevo" element={<ExamenOptometricoForm />} />
+                <Route path="historial/:historiaId/examenes/:examenId/editar" element={<ExamenOptometricoForm />} />
+                <Route path="citas/:citaId/examen/nuevo" element={<ExamenOptometricoForm />} />
+              </Route>
+
+              {/* Recepción y operación administrativa de citas */}
               <Route element={<ProtectedRoute allowedRoles={["Administrador", "Recepcionista"]} />}>
+                <Route path="usuarios/pacientes" element={<Pacientes />} />
                 <Route path="inventario" element={<Generos />} />
                 <Route path="facturacion" element={<Generos />} />
               </Route>

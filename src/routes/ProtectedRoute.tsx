@@ -2,6 +2,7 @@ import { SymbolIcon } from "../components/SymbolIcon";
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import { getDefaultRouteForRoles, hasRoleMatch } from "../lib/roleCapabilities";
 
 interface ProtectedRouteProps {
   allowedRoles?: string[];
@@ -28,22 +29,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
   }
 
   if (allowedRoles && user) {
-    const hasAllowedRole = user.roles.some((role) => allowedRoles.includes(role));
+    const hasAllowedRole = user.roles.some((role) =>
+      hasRoleMatch(allowedRoles, (allowedRole) => allowedRole === role || allowedRole.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() === role.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase())
+    );
     if (!hasAllowedRole) {
-      // If user is a Patient, redirect them to the Patient Portal
-      if (user.roles.includes("Paciente")) {
-        return <Navigate to="/portal/dashboard" replace />;
-      }
-      
-      // If user has administrative access, redirect to the Admin Dashboard
-      const hasAdminAccess = user.roles.some(
-        (r) => r === "Administrador" || r === "Médico" || r === "Recepcionista"
-      );
-      if (hasAdminAccess) {
-        return <Navigate to="/admin/dashboard" replace />;
-      }
-      
-      return <Navigate to="/login" replace />;
+      return <Navigate to={getDefaultRouteForRoles(user.roles)} replace />;
     }
   }
 

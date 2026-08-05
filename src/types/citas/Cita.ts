@@ -20,6 +20,7 @@ export interface Cita {
       especialidad_medica: EspecialidadMedica;
       perfil: {
         usuario: {
+          usuario_id?: number;
           persona: Persona;
         };
       };

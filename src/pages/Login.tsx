@@ -5,6 +5,7 @@ import { useAuth } from "../context/useAuth";
 import { useTheme } from "../context/useTheme";
 import logoImg from "../assets/logo.svg"; // Cambia a .png si convertiste a PNG
 import { getApiErrorMessage } from "../lib/apiError";
+import { getDefaultRouteForRoles } from "../lib/roleCapabilities";
 
 
 const Login: React.FC = () => {
@@ -24,16 +25,7 @@ const Login: React.FC = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user && status === "idle") {
-      const hasAdminAccess = user.roles.some(
-        (r) => r === "Administrador" || r === "Médico" || r === "Recepcionista"
-      );
-      if (hasAdminAccess) {
-        navigate("/admin/dashboard", { replace: true });
-      } else if (user.roles.includes("Paciente")) {
-        navigate("/portal/dashboard", { replace: true });
-      } else {
-        navigate("/unauthorized", { replace: true });
-      }
+navigate(getDefaultRouteForRoles(user.roles), { replace: true });
     }
   }, [isAuthenticated, user, status, navigate]);
 
@@ -76,16 +68,7 @@ const Login: React.FC = () => {
           try {
             const parsedUser = JSON.parse(savedUser) as { roles?: string[] };
             const roles = Array.isArray(parsedUser.roles) ? parsedUser.roles : [];
-            const hasAdminAccess = roles.some(
-              (r) => r === "Administrador" || r === "Médico" || r === "Recepcionista"
-            );
-            if (hasAdminAccess) {
-              navigate("/admin/dashboard");
-            } else if (roles.includes("Paciente")) {
-              navigate("/portal/dashboard");
-            } else {
-              navigate("/unauthorized");
-            }
+            navigate(getDefaultRouteForRoles(roles));
           } catch {
             navigate("/admin/dashboard");
           }
