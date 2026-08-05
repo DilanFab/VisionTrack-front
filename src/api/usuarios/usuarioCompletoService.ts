@@ -1,11 +1,12 @@
 import api from "../axios";
 import type { UsuarioCompleto, UsuarioCompletoPayload } from "../../types/usuarios/UsuarioCompleto";
+import { unwrapApiList, type PaginatedApiResponse } from "../../lib/apiList";
 
 const BASE_URL = "/api/usuarios-completos";
 
 export const getUsuariosCompletos = async (): Promise<UsuarioCompleto[]> => {
-  const { data } = await api.get<UsuarioCompleto[]>(BASE_URL);
-  return data;
+  const { data } = await api.get<UsuarioCompleto[] | PaginatedApiResponse<UsuarioCompleto>>(BASE_URL);
+  return unwrapApiList(data);
 };
 
 export const createUsuarioCompleto = async (

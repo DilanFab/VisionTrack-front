@@ -77,7 +77,6 @@ navigate(getDefaultRouteForRoles(user.roles), { replace: true });
         }
       }, 1500);
     } catch (err: unknown) {
-      console.error(err);
       setStatus("error");
       setErrorMsg(getApiErrorMessage(err, "Error de conexión. Verifique que el servidor backend esté corriendo."));
       setTimeout(() => {

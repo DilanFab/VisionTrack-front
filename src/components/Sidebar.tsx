@@ -37,7 +37,7 @@ const isPatientPortalNode = (node: MenuNode) => {
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed, section, mobileOpen = false, onClose }) => {
-  const { logout, hasRole, user } = useAuth();
+  const { logout, hasRole, user, token } = useAuth();
 
   const [menus, setMenus] = useState<Menu[]>([]);
   // Vacío por defecto: todos los grupos del menú arrancan cerrados. Acordeón
@@ -48,19 +48,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, section, mobileOpen
   const [expandedGroupIds, setExpandedGroupIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
+    if (!token) return;
+
+    let activo = true;
     (async () => {
       try {
         const menusData = await getNavigationMenus();
-        setMenus(menusData);
+        if (activo) setMenus(menusData);
       } catch (error) {
-        console.error("No se pudo cargar el menú de navegación:", error);
+        if (activo) console.error("No se pudo cargar el menú de navegación:", error);
       }
     })();
-  }, []);
+
+    return () => {
+      activo = false;
+    };
+  }, [token]);
 
   const menusVisibles = useMemo(
-    () => menus.filter((m) => m.menu_estado === "A"),
-    [menus]
+    () => token ? menus.filter((m) => m.menu_estado === "A") : [],
+    [menus, token]
   );
 
   const menuTree = useMemo(() => {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import DataTable from "datatables.net-react";
 import { Link } from "react-router-dom";
 import { Button, Modal, Form, Badge, Spinner, Alert } from "react-bootstrap";
@@ -18,8 +18,9 @@ import { idiomaEspanol } from "../../lib/datatableEsLang";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { confirmarEliminacion, mostrarExito, mostrarError } from "../../lib/alerts";
+import { getApiErrorMessage, getApiStatusCode } from "../../lib/apiError";
 import { useAuth } from "../../context/useAuth";
-import { can, hasDoctorRole, canReadClinicalSupervision } from "../../lib/roleCapabilities";
+import { can, hasDoctorRole, hasReceptionistRole, canReadClinicalSupervision } from "../../lib/roleCapabilities";
 
 const initialForm = {
   historia_clinica_id: "",
@@ -69,34 +70,81 @@ export default function Citas() {
   const [horariosDoctor, setHorariosDoctor] = useState<HorarioDoctor[]>([]);
   const [cargandoHorarios, setCargandoHorarios] = useState(false);
 
-  const cargarDatos = async () => {
+  const puedeGestionarCitas = can(user?.roles, "appointments:manage");
+  const esDoctorOptometra = hasDoctorRole(user?.roles);
+  const esRecepcionista = hasReceptionistRole(user?.roles);
+  const modoSupervisor = canReadClinicalSupervision(user?.roles);
+
+  const mensajePermisosCitas = useCallback((error: unknown) => {
+    const status = getApiStatusCode(error);
+    if (status === 403 && esRecepcionista) {
+      return "La API todavía no autoriza al rol Recepcionista para gestionar citas. Se requiere habilitar ese rol en /api/citas.";
+    }
+    if (status === 403 && esDoctorOptometra) {
+      return "La API rechazó las citas del Doctor/Optómetra. Revisa que el backend acepte el rol técnico Médico/Medico en /api/citas.";
+    }
+    return getApiErrorMessage(error, "No se pudieron cargar las citas. Verifica que el backend esté corriendo.");
+  }, [esDoctorOptometra, esRecepcionista]);
+
+  const mensajePermisosCatalogos = useCallback((error: unknown) => {
+    const status = getApiStatusCode(error);
+    if (status === 403 && esRecepcionista) {
+      return "La API restringe los catálogos de pacientes/doctores a Administrador; Recepción necesita acceso de lectura/creación para agendar.";
+    }
+    return getApiErrorMessage(error, "No se pudieron cargar los catálogos necesarios para agendar.");
+  }, [esRecepcionista]);
+
+  const cargarDatos = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      const [citasData, doctoresData, pacientesData, estadosData] = await Promise.all([
+
+      const [citasResult, doctoresResult, pacientesResult, estadosResult] = await Promise.allSettled([
         getCitas(),
-        getDoctoresCompletos(),
-        getPacientesCompletos(),
-        getEstadosCita(),
+        puedeGestionarCitas ? getDoctoresCompletos() : Promise.resolve<Doctor[]>([]),
+        puedeGestionarCitas ? getPacientesCompletos() : Promise.resolve<Paciente[]>([]),
+        puedeGestionarCitas ? getEstadosCita() : Promise.resolve<EstadoCita[]>([]),
       ]);
-      setCitas(citasData);
-      setDoctores(doctoresData);
-      setPacientes(pacientesData);
-      setEstadosCita(estadosData);
-    } catch {
-      setError("No se pudo conectar con la API. Verifica que el backend esté corriendo.");
+
+      const errores: string[] = [];
+
+      if (citasResult.status === "fulfilled") {
+        setCitas(citasResult.value);
+      } else {
+        setCitas([]);
+        errores.push(mensajePermisosCitas(citasResult.reason));
+      }
+
+      if (doctoresResult.status === "fulfilled") {
+        setDoctores(doctoresResult.value);
+      } else {
+        setDoctores([]);
+        errores.push(mensajePermisosCatalogos(doctoresResult.reason));
+      }
+
+      if (pacientesResult.status === "fulfilled") {
+        setPacientes(pacientesResult.value);
+      } else {
+        setPacientes([]);
+        errores.push(mensajePermisosCatalogos(pacientesResult.reason));
+      }
+
+      if (estadosResult.status === "fulfilled") {
+        setEstadosCita(estadosResult.value);
+      } else {
+        setEstadosCita([]);
+        errores.push(getApiErrorMessage(estadosResult.reason, "No se pudieron cargar los estados de cita."));
+      }
+
+      setError([...new Set(errores)].join(" "));
     } finally {
       setLoading(false);
     }
-  };
+  }, [mensajePermisosCatalogos, mensajePermisosCitas, puedeGestionarCitas]);
 
   useEffect(() => {
-    void Promise.resolve().then(cargarDatos);
-  }, []);
-
-  const puedeGestionarCitas = can(user?.roles, "appointments:manage");
-  const esDoctorOptometra = hasDoctorRole(user?.roles);
-  const modoSupervisor = canReadClinicalSupervision(user?.roles);
+    void cargarDatos();
+  }, [cargarDatos]);
 
   const citasVisibles = useMemo(() => {
     if (!esDoctorOptometra) return citas;
