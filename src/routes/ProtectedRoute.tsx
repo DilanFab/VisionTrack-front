@@ -33,7 +33,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
     if (!hasAllowedRole) {
       // If user is a Patient, redirect them to the Patient Portal
       if (user.roles.includes("Paciente")) {
-        return <Navigate to="/portal" replace />;
+        return <Navigate to="/portal/dashboard" replace />;
       }
       
       // If user has administrative access, redirect to the Admin Dashboard

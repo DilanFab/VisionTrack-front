@@ -2,12 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import logoImg from "../assets/logo.svg";
-import { getMenus } from "../api/rolesPermisos/menuService";
-import { getRoles } from "../api/rolesPermisos/rolService";
-import { getPermisos } from "../api/rolesPermisos/permisoService";
+import { getNavigationMenus } from "../api/authNavigationService";
 import type { Menu } from "../types/rolesPermisos/Menu";
-import type { Rol } from "../types/rolesPermisos/Rol";
-import type { Permiso } from "../types/rolesPermisos/Permiso";
 import { buildMenuTree, collectIds, getAncestorIds, type MenuNode } from "../lib/menuTree";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { findIconDefinition } from "@fortawesome/fontawesome-svg-core";
@@ -25,11 +21,9 @@ const resolveIcon = (nombre: string | null | undefined): IconDefinition | null =
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
-  const { logout, hasRole, user } = useAuth();
+  const { logout, hasRole } = useAuth();
 
   const [menus, setMenus] = useState<Menu[]>([]);
-  const [roles, setRoles] = useState<Rol[]>([]);
-  const [permisos, setPermisos] = useState<Permiso[]>([]);
   // Vacío por defecto: todos los grupos del menú arrancan cerrados. Acordeón
   // global: solo una rama (de raíz a hoja) puede estar abierta a la vez, así
   // que abrir cualquier grupo cierra todo lo demás salvo sus propios ancestros
@@ -40,45 +34,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   useEffect(() => {
     (async () => {
       try {
-        const [menusData, rolesData, permisosData] = await Promise.all([
-          getMenus(),
-          getRoles(),
-          getPermisos(),
-        ]);
+        const menusData = await getNavigationMenus();
         setMenus(menusData);
-        setRoles(rolesData);
-        setPermisos(permisosData);
       } catch (error) {
         console.error("No se pudo cargar el menú de navegación:", error);
       }
     })();
   }, []);
 
-  // Ids de rol del usuario autenticado (puede tener varios roles a la vez).
-  const rolIdsDelUsuario = useMemo(() => {
-    if (!user) return new Set<number>();
-    return new Set(
-      roles
-        .filter((r) => r.rol_estado === "A" && user.roles.includes(r.rol_nombre))
-        .map((r) => r.rol_id)
-    );
-  }, [roles, user]);
-
-  // Ids de menú habilitados por CUALQUIERA de los roles del usuario. Al ser un
-  // Set, los menús comunes entre varios roles quedan deduplicados de forma natural.
-  const menuIdsPermitidos = useMemo(
-    () =>
-      new Set(
-        permisos
-          .filter((p) => p.permiso_estado === "A" && rolIdsDelUsuario.has(p.rol_id))
-          .map((p) => p.menu_id)
-      ),
-    [permisos, rolIdsDelUsuario]
-  );
-
   const menusVisibles = useMemo(
-    () => menus.filter((m) => m.menu_estado === "A" && menuIdsPermitidos.has(m.menu_id)),
-    [menus, menuIdsPermitidos]
+    () => menus.filter((m) => m.menu_estado === "A"),
+    [menus]
   );
 
   const menuTree = useMemo(() => buildMenuTree(menusVisibles), [menusVisibles]);

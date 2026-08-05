@@ -6,9 +6,14 @@ import { resolveUsuarioImagenUrl } from "../lib/imagenUsuario";
 interface TopbarProps {
   collapsed: boolean;
   onToggleSidebar: () => void;
+  searchPlaceholder?: string;
 }
 
-export const Topbar: React.FC<TopbarProps> = ({ collapsed, onToggleSidebar }) => {
+export const Topbar: React.FC<TopbarProps> = ({
+  collapsed,
+  onToggleSidebar,
+  searchPlaceholder = "Buscar pacientes, historiales, diagnósticos...",
+}) => {
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
 
@@ -37,7 +42,7 @@ export const Topbar: React.FC<TopbarProps> = ({ collapsed, onToggleSidebar }) =>
           </span>
           <input
             className="w-full bg-surface-dim border border-outline-variant rounded-full py-2 pl-10 pr-4 text-on-surface placeholder:text-outline focus:outline-none focus:border-primary transition-colors text-sm"
-            placeholder="Buscar pacientes, historiales, diagnósticos..."
+            placeholder={searchPlaceholder}
             type="text"
           />
         </div>
