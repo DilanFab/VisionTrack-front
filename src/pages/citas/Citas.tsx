@@ -290,9 +290,9 @@ export default function Citas() {
           className="table table-striped table-bordered"
           options={{ language: idiomaEspanol }}
           slots={{
-            0: (_data: unknown, row: Cita) => nombreCompleto(row.horario_doctor.doctor.perfil.usuario.persona),
-            1: (_data: unknown, row: Cita) => nombreCompleto(row.historia_clinica.perfil.usuario.persona),
-            2: (_data: unknown, row: Cita) => formatFechaHora(row),
+            0: (_data: unknown, row: Cita) => <span>{nombreCompleto(row.horario_doctor.doctor.perfil.usuario.persona)}</span>,
+            1: (_data: unknown, row: Cita) => <span>{nombreCompleto(row.historia_clinica.perfil.usuario.persona)}</span>,
+            2: (_data: unknown, row: Cita) => <span>{formatFechaHora(row)}</span>,
             3: (_data: unknown, row: Cita) => (
               <Badge bg={row.estado_cita.estado_cita_nombre === "Cancelada" ? "secondary" : "success"}>
                 {row.estado_cita.estado_cita_nombre}

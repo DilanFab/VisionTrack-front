@@ -4,7 +4,7 @@ import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import esLocale from "@fullcalendar/core/locales/es";
-import type { DateSelectArg, EventClickArg, EventInput } from "@fullcalendar/core";
+import type { DateSelectArg, DateSpanApi, EventClickArg, EventInput } from "@fullcalendar/core";
 import { getHorariosPorDoctor, setHorariosPorDoctor } from "../../api/medicos/horarioDoctorService";
 import type { Doctor } from "../../types/medicos/Doctor";
 import type { DiaSemana, HorarioDoctorSlot } from "../../types/medicos/HorarioDoctor";
@@ -119,7 +119,7 @@ export default function HorarioDoctorModal({ show, onHide, doctor }: Props) {
     setEventos((prev) => prev.filter((e) => e.id !== info.event.id));
   };
 
-  const selectAllow = (selectInfo: DateSelectArg) => {
+  const selectAllow = (selectInfo: DateSpanApi) => {
     const finAjustado = new Date(selectInfo.end.getTime() - 1);
     return selectInfo.start.toDateString() === finAjustado.toDateString();
   };
