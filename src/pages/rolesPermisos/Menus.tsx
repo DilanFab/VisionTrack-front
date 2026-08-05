@@ -55,7 +55,7 @@ export default function Menus() {
   };
 
   useEffect(() => {
-    cargarMenus();
+    void Promise.resolve().then(cargarMenus);
   }, []);
 
   const handleNuevo = () => {
@@ -176,10 +176,10 @@ export default function Menus() {
             ),
             6: (_data: unknown, row: Menu) => (
               <>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)}>
+                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
                   <FontAwesomeIcon icon={faPen} />
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => handleEliminar(row.menu_id)}>
+                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.menu_id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </>

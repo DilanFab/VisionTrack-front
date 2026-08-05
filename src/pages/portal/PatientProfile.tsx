@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 
 const PatientProfile: React.FC = () => {
   const { user } = useAuth();
@@ -7,13 +7,13 @@ const PatientProfile: React.FC = () => {
   return (
     <div>
       <div className="mb-8">
-        <p className="text-xs uppercase tracking-widest text-outline font-bold mb-2">Portal del Paciente</p>
-        <h2 className="text-3xl font-bold text-on-surface">Mi Perfil</h2>
-        <p className="text-on-surface-variant text-sm mt-1">Datos de cuenta asociados a tu acceso de paciente.</p>
+        <p className="text-xs uppercase tracking-widest text-outline font-bold mb-2">Portal del paciente</p>
+        <h2 className="text-3xl font-bold text-on-surface">Mi perfil</h2>
+        <p className="text-on-surface-variant text-sm mt-1">Revisa los datos asociados a tu acceso y mantén tu información clínica identificable.</p>
       </div>
 
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-4 bg-surface-container-high rounded-2xl border border-outline-variant p-6">
+        <div className="lg:col-span-4 vt-surface-card rounded-2xl p-6">
           <div className="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-bold mb-4">
             {(user?.persona?.nombre || user?.usuario_nombre || "P").charAt(0).toUpperCase()}
           </div>
@@ -28,7 +28,7 @@ const PatientProfile: React.FC = () => {
           </div>
         </div>
 
-        <div className="lg:col-span-8 bg-surface-container-low rounded-2xl border border-outline-variant p-6">
+        <div className="lg:col-span-8 vt-surface-card rounded-2xl p-6">
           <h3 className="text-lg font-bold text-on-surface mb-5">Información básica</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="rounded-xl bg-surface border border-outline-variant p-4">

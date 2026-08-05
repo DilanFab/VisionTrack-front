@@ -99,7 +99,7 @@ export default function Pacientes() {
   };
 
   useEffect(() => {
-    cargarDatos();
+    void Promise.resolve().then(cargarDatos);
   }, []);
 
   useEffect(() => {
@@ -317,10 +317,10 @@ export default function Pacientes() {
             ),
             6: (_data: unknown, row: Paciente) => (
               <>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)}>
+                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
                   <FontAwesomeIcon icon={faPen} />
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => handleEliminar(row.historia_clinica_id)}>
+                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.historia_clinica_id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </>

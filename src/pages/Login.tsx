@@ -1,8 +1,10 @@
+import { SymbolIcon } from "../components/SymbolIcon";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/useAuth";
+import { useTheme } from "../context/useTheme";
 import logoImg from "../assets/logo.svg"; // Cambia a .png si convertiste a PNG
+import { getApiErrorMessage } from "../lib/apiError";
 
 
 const Login: React.FC = () => {
@@ -35,7 +37,7 @@ const Login: React.FC = () => {
     }
   }, [isAuthenticated, user, status, navigate]);
 
-  // Subtle Mouse parallax/tilt effect for premium feeling
+  // Efecto sutil de profundidad para reforzar foco sin bloquear la tarea principal
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!cardRef.current) return;
@@ -62,42 +64,39 @@ const Login: React.FC = () => {
       await login(email, password);
       setStatus("success");
       
-      // Save remember setting if desired (optional placeholder functionality)
+      // Guarda preferencia local de equipo recordado si el usuario lo solicita
       if (remember) {
         localStorage.setItem("remember_workstation", "true");
       }
 
-      // Small delay for the "Access Granted" animation to complete
+      // Pequeña pausa para que el feedback de acceso sea perceptible
       setTimeout(() => {
         const savedUser = localStorage.getItem("user");
         if (savedUser) {
           try {
-            const parsedUser = JSON.parse(savedUser);
-            const hasAdminAccess = parsedUser.roles.some(
-              (r: string) => r === "Administrador" || r === "Médico" || r === "Recepcionista"
+            const parsedUser = JSON.parse(savedUser) as { roles?: string[] };
+            const roles = Array.isArray(parsedUser.roles) ? parsedUser.roles : [];
+            const hasAdminAccess = roles.some(
+              (r) => r === "Administrador" || r === "Médico" || r === "Recepcionista"
             );
             if (hasAdminAccess) {
               navigate("/admin/dashboard");
-            } else if (parsedUser.roles.includes("Paciente")) {
+            } else if (roles.includes("Paciente")) {
               navigate("/portal/dashboard");
             } else {
               navigate("/unauthorized");
             }
-          } catch (e) {
+          } catch {
             navigate("/admin/dashboard");
           }
         } else {
           navigate("/admin/dashboard");
         }
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setStatus("error");
-      if (err.response && err.response.data && err.response.data.error) {
-        setErrorMsg(err.response.data.error);
-      } else {
-        setErrorMsg("Error de conexión. Verifique que el servidor backend esté corriendo.");
-      }
+      setErrorMsg(getApiErrorMessage(err, "Error de conexión. Verifique que el servidor backend esté corriendo."));
       setTimeout(() => {
         setStatus("idle");
       }, 3000);
@@ -113,11 +112,10 @@ const Login: React.FC = () => {
       <button
         onClick={toggleTheme}
         className="absolute top-4 right-4 p-3 rounded-full bg-surface-container-high/60 hover:bg-surface-container-highest/80 text-on-surface transition-all shadow-lg border border-outline-variant/30 backdrop-blur-md active:scale-95 cursor-pointer z-50"
-        title="Cambiar Tema"
+        title="Cambiar tema"
+        aria-label={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
       >
-        <span className="material-symbols-outlined flex items-center justify-center">
-          {theme === "light" ? "dark_mode" : "light_mode"}
-        </span>
+        <SymbolIcon name={theme === "light" ? "dark_mode" : "light_mode"} className="flex items-center justify-center" />
       </button>
 
       {/* UI Background Blobs */}
@@ -144,14 +142,14 @@ const Login: React.FC = () => {
             </div>
             <h1 className="font-bold text-4xl text-primary tracking-tight"></h1>
             <p className="text-sm font-medium text-on-surface-variant mt-1 tracking-wide uppercase opacity-85">
-              Clinical Precision. Patient Centricity.
+              Precisión clínica para el cuidado visual
             </p>
           </header>
 
           {/* Error Message Box */}
           {errorMsg && (
             <div className="mb-6 p-3.5 rounded-lg bg-error-container text-on-error-container border border-error/20 flex items-center gap-2.5 animate-fadeIn text-sm">
-              <span className="material-symbols-outlined text-error">error</span>
+              <SymbolIcon name="error" className="text-error" />
               <span>{errorMsg}</span>
             </div>
           )}
@@ -164,13 +162,11 @@ const Login: React.FC = () => {
                 className="block text-xs font-bold text-on-surface-variant tracking-wider uppercase ml-1" 
                 htmlFor="email"
               >
-                ADMINISTRATOR EMAIL
+                Correo institucional
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="material-symbols-outlined text-outline group-focus-within:text-primary transition-colors">
-                    alternate_email
-                  </span>
+                  <SymbolIcon name="alternate_email" className="text-outline group-focus-within:text-primary transition-colors" />
                 </div>
                 <input
                   id="email"
@@ -181,7 +177,7 @@ const Login: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={status === "submitting" || status === "success"}
-                  className="block w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface font-normal placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all glow-input disabled:opacity-50"
+                  className="block w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface font-normal placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all glow-input disabled:opacity-50"
                 />
               </div>
             </div>
@@ -193,7 +189,7 @@ const Login: React.FC = () => {
                   className="block text-xs font-bold text-on-surface-variant tracking-wider uppercase" 
                   htmlFor="password"
                 >
-                  PASSWORD
+                  Contraseña
                 </label>
                 <a 
                   className="text-xs font-semibold text-primary hover:text-primary-container transition-colors" 
@@ -203,14 +199,12 @@ const Login: React.FC = () => {
                     alert("Por favor, póngase en contacto con el administrador del sistema para restablecer su contraseña.");
                   }}
                 >
-                  FORGOT?
+                  ¿Olvidaste tu contraseña?
                 </a>
               </div>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="material-symbols-outlined text-outline group-focus-within:text-primary transition-colors">
-                    lock
-                  </span>
+                  <SymbolIcon name="lock" className="text-outline group-focus-within:text-primary transition-colors" />
                 </div>
                 <input
                   id="password"
@@ -221,17 +215,16 @@ const Login: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={status === "submitting" || status === "success"}
-                  className="block w-full pl-10 pr-12 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface font-normal placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all glow-input disabled:opacity-50"
+                  className="block w-full pl-10 pr-12 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface font-normal placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all glow-input disabled:opacity-50"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={status === "submitting" || status === "success"}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface transition-colors cursor-pointer"
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
-                  <span className="material-symbols-outlined">
-                    {showPassword ? "visibility_off" : "visibility"}
-                  </span>
+                  <SymbolIcon name={showPassword ? "visibility_off" : "visibility"} />
                 </button>
               </div>
             </div>
@@ -250,7 +243,7 @@ const Login: React.FC = () => {
                 className="text-xs font-medium text-on-surface-variant cursor-pointer select-none" 
                 htmlFor="remember"
               >
-                Remember this workstation for 24 hours
+                Recordar este equipo durante 24 horas
               </label>
             </div>
 
@@ -266,27 +259,25 @@ const Login: React.FC = () => {
             >
               {status === "submitting" && (
                 <>
-                  <span className="material-symbols-outlined animate-spin mr-2">progress_activity</span>
+                  <SymbolIcon name="progress_activity" className="animate-spin mr-2" />
                   <span>Verificando credenciales...</span>
                 </>
               )}
               {status === "success" && (
                 <>
-                  <span className="material-symbols-outlined mr-2">check_circle</span>
-                  <span>Acceso Concedido</span>
+                  <SymbolIcon name="check_circle" className="mr-2" />
+                  <span>Acceso concedido</span>
                 </>
               )}
               {status === "idle" && (
                 <>
-                  <span>Login</span>
-                  <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">
-                    arrow_forward
-                  </span>
+                  <span>Iniciar sesión</span>
+                  <SymbolIcon name="arrow_forward" className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
               {status === "error" && (
                 <>
-                  <span className="material-symbols-outlined mr-2">error</span>
+                  <SymbolIcon name="error" className="mr-2" />
                   <span>Intente de nuevo</span>
                 </>
               )}
@@ -297,16 +288,16 @@ const Login: React.FC = () => {
           <footer className="mt-8 pt-5 border-t border-outline-variant/20 text-center">
             <div className="flex items-center justify-center space-x-4 text-outline mb-3.5">
               <div className="flex items-center space-x-1 bg-surface-container-high/40 px-2 py-0.5 rounded text-xs">
-                <span className="material-symbols-outlined text-xs">security</span>
+                <SymbolIcon name="security" className="text-xs" />
                 <span className="font-semibold uppercase">AES-256</span>
               </div>
               <div className="flex items-center space-x-1 bg-surface-container-high/40 px-2 py-0.5 rounded text-xs">
-                <span className="material-symbols-outlined text-xs">verified_user</span>
-                <span className="font-semibold uppercase text-secondary">HIPAA COMPLIANT</span>
+                <SymbolIcon name="verified_user" className="text-xs" />
+                <span className="font-semibold uppercase text-secondary">ENTORNO CLÍNICO</span>
               </div>
             </div>
             <p className="text-xs text-on-surface-variant/60 leading-relaxed max-w-[280px] mx-auto mb-4">
-              Proprietary system for authorized medical personnel only. Unauthorized access is strictly prohibited and monitored.
+              Sistema privado para personal autorizado y pacientes registrados. Tu actividad se protege y monitorea para cuidar la información clínica.
             </p>
             <p className="text-xs text-on-surface-variant">
               ¿No tienes cuenta?{" "}
@@ -322,7 +313,7 @@ const Login: React.FC = () => {
           <div className="flex items-center space-x-2">
             <span className="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
             <span className="text-[10px] font-bold text-secondary uppercase tracking-wider">
-              Server Operational
+              Sistema operativo
             </span>
           </div>
           <div className="flex items-center space-x-2 opacity-65">

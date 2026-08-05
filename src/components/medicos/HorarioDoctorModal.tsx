@@ -50,7 +50,7 @@ export default function HorarioDoctorModal({ show, onHide, doctor }: Props) {
 
   useEffect(() => {
     if (!show || !doctor) {
-      setEventos([]);
+      void Promise.resolve().then(() => setEventos([]));
       return;
     }
 
@@ -72,8 +72,8 @@ export default function HorarioDoctorModal({ show, onHide, doctor }: Props) {
               id: `${h.horario_doctor_dia}-${start.getHours()}`,
               start,
               end,
-              backgroundColor: "#198754",
-              borderColor: "#198754",
+              backgroundColor: "var(--secondary)",
+              borderColor: "var(--secondary)",
               display: "block",
               extendedProps: { dia: h.horario_doctor_dia },
             };
@@ -98,8 +98,8 @@ export default function HorarioDoctorModal({ show, onHide, doctor }: Props) {
           id: `${dia}-${cursor.getHours()}`,
           start: new Date(cursor),
           end: siguiente,
-          backgroundColor: "#198754",
-          borderColor: "#198754",
+          backgroundColor: "var(--secondary)",
+          borderColor: "var(--secondary)",
           display: "block",
           extendedProps: { dia },
         });
@@ -152,7 +152,7 @@ export default function HorarioDoctorModal({ show, onHide, doctor }: Props) {
       </Modal.Header>
       <Modal.Body>
         {loading ? (
-          <Spinner animation="border" />
+          <div className="text-center p-4"><Spinner animation="border" role="status" /><p className="small text-muted mt-2">Cargando disponibilidad...</p></div>
         ) : (
           <div className="horario-doctor-calendario">
             <FullCalendar

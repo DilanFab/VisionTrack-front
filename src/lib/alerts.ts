@@ -1,5 +1,10 @@
 import Swal from "sweetalert2";
 
+const colorToken = (name: string, fallback: string) => {
+  if (typeof window === "undefined") return fallback;
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+};
+
 export const confirmarEliminacion = async (
   texto = "Esta acción no se puede revertir."
 ): Promise<boolean> => {
@@ -10,7 +15,8 @@ export const confirmarEliminacion = async (
     showCancelButton: true,
     confirmButtonText: "Sí, eliminar",
     cancelButtonText: "Cancelar",
-    confirmButtonColor: "#d33",
+    confirmButtonColor: colorToken("--error", "#ba1a1a"),
+    cancelButtonColor: colorToken("--outline", "#6f858b"),
   });
   return resultado.isConfirmed;
 };

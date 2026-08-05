@@ -87,7 +87,7 @@ export default function Citas() {
   };
 
   useEffect(() => {
-    cargarDatos();
+    void Promise.resolve().then(cargarDatos);
   }, []);
 
   const pacientesFiltrados = useMemo(() => {
@@ -300,10 +300,10 @@ export default function Citas() {
             ),
             4: (_data: unknown, row: Cita) => (
               <>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)}>
+                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
                   <FontAwesomeIcon icon={faPen} />
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => handleEliminar(row.cita_id)}>
+                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.cita_id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </>

@@ -1,6 +1,7 @@
+import { SymbolIcon } from "../components/SymbolIcon";
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 interface ProtectedRouteProps {
   allowedRoles?: string[];
@@ -13,9 +14,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background text-on-surface transition-colors duration-300">
         <div className="flex flex-col items-center space-y-4">
-          <span className="material-symbols-outlined text-primary text-5xl animate-spin">
-            progress_activity
-          </span>
+          <SymbolIcon name="progress_activity" className="text-primary text-5xl animate-spin" />
           <p className="text-sm font-semibold tracking-wider animate-pulse text-primary">
             Cargando sesión segura...
           </p>

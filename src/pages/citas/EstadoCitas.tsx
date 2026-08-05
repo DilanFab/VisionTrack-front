@@ -42,7 +42,7 @@ export default function EstadoCitas() {
   };
 
   useEffect(() => {
-    cargarEstados();
+    void Promise.resolve().then(cargarEstados);
   }, []);
 
   const handleNuevo = () => {
@@ -141,10 +141,10 @@ export default function EstadoCitas() {
             ),
             4: (_data: unknown, row: EstadoCita) => (
               <>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)}>
+                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
                   <FontAwesomeIcon icon={faPen} />
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => handleEliminar(row.estado_cita_id)}>
+                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.estado_cita_id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </>

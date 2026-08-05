@@ -1,224 +1,149 @@
+import { SymbolIcon } from "../components/SymbolIcon";
 import React from "react";
+
+const tokenCards = [
+  ["Primario", "--primary", "bg-primary text-on-primary", "Acciones principales y foco clínico"],
+  ["Primario suave", "--primary-container", "bg-primary-container text-on-primary-container", "Superficies destacadas"],
+  ["Salud", "--secondary", "bg-secondary text-on-secondary", "Confirmaciones y estados saludables"],
+  ["Salud suave", "--secondary-container", "bg-secondary-container text-on-secondary-container", "Éxitos sin saturación"],
+  ["Superficie", "--surface", "bg-surface text-on-surface border border-outline-variant", "Contenido base"],
+  ["Contenedor", "--surface-container", "bg-surface-container text-on-surface border border-outline-variant", "Tarjetas y áreas agrupadas"],
+  ["Advertencia", "--tertiary", "bg-tertiary text-on-tertiary", "Atención o revisión requerida"],
+  ["Error", "--error", "bg-error text-on-error", "Errores y acciones destructivas"],
+];
 
 const UiGuide: React.FC = () => {
   return (
-    <div className="p-6 space-y-8 max-w-4xl mx-auto">
-      {/* Page Header */}
-      <header className="border-b border-outline-variant/30 pb-4">
-        <h2 className="text-3xl font-bold text-primary">UI Master Style Guide</h2>
-        <p className="text-sm text-on-surface-variant mt-1">
-          Guía de componentes maestros y tokens de diseño para mantener la consistencia estética con Stitch.
+    <div className="p-4 sm:p-6 space-y-8 max-w-5xl mx-auto">
+      <header className="border-b border-outline-variant/40 pb-5">
+        <p className="vt-page-kicker mb-2">Sistema visual VisionTrack</p>
+        <h2 className="text-3xl font-bold text-on-surface">Guía de experiencia clínica</h2>
+        <p className="text-sm text-on-surface-variant mt-2 max-w-3xl">
+          Referencia de tokens, componentes y estados para mantener una interfaz clara, accesible y centrada en usuarios clínicos y pacientes.
         </p>
       </header>
 
-      {/* 1. Color Palette Tokens */}
       <section className="space-y-4">
-        <h3 className="text-lg font-bold text-on-surface border-l-4 border-primary pl-2.5">
-          1. Color Palette Tokens
-        </h3>
-        <p className="text-xs text-on-surface-variant">
-          Colores del tema actual (se adaptan dinámicamente al cambiar entre Modo Claro y Modo Oscuro).
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl bg-primary text-on-primary shadow-sm">
-            <span className="block font-bold text-xs">Primary</span>
-            <span className="block text-[10px] font-mono opacity-80">--primary</span>
-          </div>
-          <div className="p-4 rounded-xl bg-primary-container text-on-primary-container shadow-sm">
-            <span className="block font-bold text-xs">Primary Container</span>
-            <span className="block text-[10px] font-mono opacity-80">--primary-container</span>
-          </div>
-          <div className="p-4 rounded-xl bg-secondary text-on-secondary shadow-sm">
-            <span className="block font-bold text-xs">Secondary</span>
-            <span className="block text-[10px] font-mono opacity-80">--secondary</span>
-          </div>
-          <div className="p-4 rounded-xl bg-secondary-container text-on-secondary-container shadow-sm">
-            <span className="block font-bold text-xs">Secondary Container</span>
-            <span className="block text-[10px] font-mono opacity-80">--secondary-container</span>
-          </div>
-          <div className="p-4 rounded-xl bg-background text-on-background border border-outline-variant/20 shadow-sm">
-            <span className="block font-bold text-xs">Background</span>
-            <span className="block text-[10px] font-mono opacity-80">--background</span>
-          </div>
-          <div className="p-4 rounded-xl bg-surface text-on-surface border border-outline-variant/20 shadow-sm">
-            <span className="block font-bold text-xs">Surface</span>
-            <span className="block text-[10px] font-mono opacity-80">--surface</span>
-          </div>
-          <div className="p-4 rounded-xl bg-surface-container text-on-surface border border-outline-variant/20 shadow-sm">
-            <span className="block font-bold text-xs">Surface Container</span>
-            <span className="block text-[10px] font-mono opacity-80">--surface-container</span>
-          </div>
-          <div className="p-4 rounded-xl bg-surface-container-lowest text-on-surface border border-outline-variant/20 shadow-sm">
-            <span className="block font-bold text-xs">Lowest Container</span>
-            <span className="block text-[10px] font-mono opacity-80">--surface-container-lowest</span>
-          </div>
+        <div>
+          <h3 className="text-lg font-bold text-on-surface border-l-4 border-primary pl-3">1. Paleta semántica</h3>
+          <p className="text-sm text-on-surface-variant mt-1">
+            Los colores comunican propósito: precisión visual, confianza clínica, salud, advertencia y error. No uses color como única señal.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {tokenCards.map(([name, token, classes, usage]) => (
+            <div key={token} className={`p-4 rounded-2xl shadow-sm ${classes}`}>
+              <span className="block font-bold text-sm">{name}</span>
+              <span className="block text-[11px] font-mono opacity-80 mt-1">{token}</span>
+              <span className="block text-xs opacity-80 mt-3">{usage}</span>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* 2. Typography Hierarchy */}
       <section className="space-y-4">
-        <h3 className="text-lg font-bold text-on-surface border-l-4 border-primary pl-2.5">
-          2. Typography Hierarchy
-        </h3>
-        <div className="p-5 bg-surface-container/40 rounded-xl border border-outline-variant/25 space-y-4">
+        <h3 className="text-lg font-bold text-on-surface border-l-4 border-primary pl-3">2. Jerarquía y microcopy</h3>
+        <div className="vt-surface-card p-6 rounded-2xl space-y-4">
           <div>
-            <span className="text-[10px] text-outline font-mono block mb-1">DISPLAY LG (Inter, 48px, bold, tracking-tight)</span>
-            <h1 className="text-4xl md:text-5xl font-bold text-primary tracking-tight">VisionTrack</h1>
+            <span className="text-[10px] text-outline font-mono block mb-1">KICKER · CONTEXTO</span>
+            <p className="vt-page-kicker">Portal del paciente</p>
           </div>
           <div>
-            <span className="text-[10px] text-outline font-mono block mb-1">HEADLINE LG (Inter, 32px, semibold)</span>
-            <h2 className="text-2xl md:text-3xl font-semibold text-on-surface">Precision Diagnostics</h2>
+            <span className="text-[10px] text-outline font-mono block mb-1">TÍTULO · TAREA PRINCIPAL</span>
+            <h1 className="text-3xl md:text-4xl font-bold text-on-surface tracking-tight">Agendar cita visual</h1>
           </div>
           <div>
-            <span className="text-[10px] text-outline font-mono block mb-1">HEADLINE MD (Inter, 24px, semibold)</span>
-            <h3 className="text-xl font-semibold text-on-surface">Patient Clinical History</h3>
-          </div>
-          <div>
-            <span className="text-[10px] text-outline font-mono block mb-1">BODY REGULAR (Inter, 14px, leading-relaxed)</span>
-            <p className="text-sm text-on-surface-variant leading-relaxed">
-              Proprietary system for authorized medical personnel only. Unauthorized access is strictly prohibited and monitored.
+            <span className="text-[10px] text-outline font-mono block mb-1">DESCRIPCIÓN · ORIENTACIÓN</span>
+            <p className="text-sm text-on-surface-variant leading-relaxed max-w-2xl">
+              Elige especialista, fecha y horario disponible. Usa mensajes cortos en español y explica el siguiente paso cuando haya errores o estados vacíos.
             </p>
           </div>
-          <div>
-            <span className="text-[10px] text-outline font-mono block mb-1">LABEL MONO (JetBrains Mono, 12px, tracking-wider)</span>
-            <span className="text-xs font-mono font-bold tracking-wider text-outline uppercase">
-              ADMINISTRATOR EMAIL
-            </span>
-          </div>
         </div>
       </section>
 
-      {/* 3. Button Component Styles */}
       <section className="space-y-4">
-        <h3 className="text-lg font-bold text-on-surface border-l-4 border-primary pl-2.5">
-          3. Interactive Buttons
-        </h3>
-        <div className="flex flex-wrap gap-4 items-center p-5 bg-surface-container/40 rounded-xl border border-outline-variant/25">
-          {/* Primary Button */}
-          <div className="text-center space-y-2">
-            <button className="bg-primary text-on-primary py-3 px-6 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-primary-container hover:shadow-lg active:scale-95 transition-all shadow-md shadow-primary/10 cursor-pointer">
-              Primary Button
-            </button>
-            <span className="block text-[10px] text-outline font-mono">bg-primary</span>
-          </div>
-
-          {/* Secondary Button */}
-          <div className="text-center space-y-2">
-            <button className="bg-secondary text-on-secondary py-3 px-6 rounded-lg font-bold text-xs uppercase tracking-wider hover:brightness-110 hover:shadow-lg active:scale-95 transition-all shadow-md shadow-secondary/10 cursor-pointer">
-              Secondary Button
-            </button>
-            <span className="block text-[10px] text-outline font-mono">bg-secondary</span>
-          </div>
-
-          {/* Outline Button */}
-          <div className="text-center space-y-2">
-            <button className="bg-transparent border border-outline text-on-surface-variant py-3 px-6 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-surface-variant hover:text-on-surface transition-colors cursor-pointer">
-              Outline Button
-            </button>
-            <span className="block text-[10px] text-outline font-mono">border-outline</span>
-          </div>
-
-          {/* Icon Button */}
-          <div className="text-center space-y-2">
-            <button className="bg-primary/10 text-primary hover:bg-primary/20 p-3 rounded-full flex items-center justify-center transition-colors cursor-pointer">
-              <span className="material-symbols-outlined">visibility</span>
-            </button>
-            <span className="block text-[10px] text-outline font-mono">Icon Button</span>
-          </div>
+        <h3 className="text-lg font-bold text-on-surface border-l-4 border-primary pl-3">3. Botones y acciones</h3>
+        <div className="vt-surface-card flex flex-wrap gap-4 items-center p-6 rounded-2xl">
+          <button className="bg-primary text-on-primary py-3 px-5 rounded-xl font-bold text-sm hover:brightness-95 active:scale-[0.98] transition-all shadow-md shadow-primary/10">
+            Agendar cita
+          </button>
+          <button className="bg-secondary text-on-secondary py-3 px-5 rounded-xl font-bold text-sm hover:brightness-95 active:scale-[0.98] transition-all shadow-md shadow-secondary/10">
+            Confirmar atención
+          </button>
+          <button className="bg-surface-container-high border border-outline-variant text-on-surface py-3 px-5 rounded-xl font-bold text-sm hover:bg-surface-container-highest transition-colors">
+            Cancelar
+          </button>
+          <button className="bg-error text-on-error py-3 px-5 rounded-xl font-bold text-sm hover:brightness-95 transition-all">
+            Eliminar registro
+          </button>
+          <button aria-label="Cambiar tema" className="bg-primary/10 text-primary hover:bg-primary/20 p-3 rounded-full flex items-center justify-center transition-colors">
+            <SymbolIcon name="routine" />
+          </button>
         </div>
       </section>
 
-      {/* 4. Form Controls */}
       <section className="space-y-4">
-        <h3 className="text-lg font-bold text-on-surface border-l-4 border-primary pl-2.5">
-          4. Form Inputs & Glow Focus
-        </h3>
-        <div className="p-5 bg-surface-container/40 rounded-xl border border-outline-variant/25 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Input with Icon Left */}
+        <h3 className="text-lg font-bold text-on-surface border-l-4 border-primary pl-3">4. Formularios</h3>
+        <div className="vt-surface-card p-6 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="block text-[10px] font-bold text-on-surface-variant tracking-wider uppercase ml-1">
-              INPUT WITH ICON LEFT
+            <label className="block text-xs font-bold text-on-surface-variant tracking-wider uppercase ml-1" htmlFor="guide-email">
+              Correo institucional
             </label>
             <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="material-symbols-outlined text-outline group-focus-within:text-primary transition-colors">
-                  alternate_email
-                </span>
-              </div>
+              <SymbolIcon name="alternate_email" className="absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" />
               <input
-                type="text"
-                placeholder="admin@visiontrack.health"
-                className="block w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface font-normal placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all glow-input"
+                id="guide-email"
+                type="email"
+                placeholder="nombre@visiontrack.health"
+                className="block w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all glow-input"
               />
             </div>
-            <span className="block text-[10px] text-outline font-mono">.glow-input / pl-10</span>
+            <p className="text-xs text-on-surface-variant">Usa etiquetas visibles, placeholders útiles y mensajes de recuperación.</p>
           </div>
-
-          {/* Simple Select Dropdown */}
           <div className="space-y-2">
-            <label className="block text-[10px] font-bold text-on-surface-variant tracking-wider uppercase ml-1">
-              SELECT DROPDOWN
+            <label className="block text-xs font-bold text-on-surface-variant tracking-wider uppercase ml-1" htmlFor="guide-select">
+              Especialidad visual
             </label>
-            <select className="block w-full px-3.5 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all glow-input">
-              <option>Opción 1</option>
-              <option>Opción 2</option>
+            <select id="guide-select" className="block w-full px-3.5 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-on-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all glow-input">
+              <option>Optometría clínica</option>
+              <option>Oftalmología</option>
             </select>
-            <span className="block text-[10px] text-outline font-mono">select / focus:border-primary</span>
           </div>
         </div>
       </section>
 
-      {/* 5. Card styles */}
       <section className="space-y-4">
-        <h3 className="text-lg font-bold text-on-surface border-l-4 border-primary pl-2.5">
-          5. Containers & Cards
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Bento Card */}
-          <div className="space-y-2">
-            <div className="bento-card p-6 rounded-xl border border-outline-variant/30 bg-surface-container-lowest transition-all hover:border-primary/30">
-              <h4 className="font-bold text-on-surface text-base">Bento Card Style</h4>
-              <p className="text-xs text-on-surface-variant mt-2 leading-relaxed">
-                Tarjeta de fondo sólido (blanco en claro, marino bajo en oscuro) con transición sutil de borde al pasar el ratón.
-              </p>
-            </div>
-            <span className="block text-[10px] text-outline font-mono">.bento-card (Claro / Bento)</span>
+        <h3 className="text-lg font-bold text-on-surface border-l-4 border-primary pl-3">5. Tarjetas y estados</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="vt-surface-card p-6 rounded-2xl">
+            <p className="text-xs uppercase tracking-wider text-outline font-bold">Citas activas</p>
+            <p className="text-4xl font-bold text-primary mt-3">12</p>
+            <p className="text-sm text-on-surface-variant mt-2">Métrica con prioridad visual clara.</p>
           </div>
-
-          {/* Glassmorphism Card */}
-          <div className="space-y-2">
-            <div className="glass-card p-6 rounded-xl relative overflow-hidden">
-              <div className="reticle top-0 left-0 border-r-0 border-b-0"></div>
-              <div className="reticle top-0 right-0 border-l-0 border-b-0"></div>
-              <h4 className="font-bold text-primary text-base">Glassmorphism Card</h4>
-              <p className="text-xs text-on-surface-variant mt-2 leading-relaxed">
-                Tarjeta translúcida con filtro de desenfoque (`backdrop-filter: blur`), ideal para logins y paneles futuristas.
-              </p>
+          <div className="vt-empty-state p-6 rounded-2xl text-center">
+            <SymbolIcon name="event_available" className="text-4xl text-outline mb-2" />
+            <p className="font-bold text-on-surface">No hay citas próximas</p>
+            <p className="text-sm text-on-surface-variant mt-1">Ofrece una acción cuando exista un siguiente paso.</p>
+          </div>
+          <div className="p-6 rounded-2xl bg-error-container text-on-error-container border border-error/20">
+            <div className="flex items-start gap-3">
+              <SymbolIcon name="error" className="text-error" />
+              <div>
+                <p className="font-bold">No se pudo guardar</p>
+                <p className="text-sm mt-1">Explica qué ocurrió y cómo recuperarse.</p>
+              </div>
             </div>
-            <span className="block text-[10px] text-outline font-mono">.glass-card / .reticle (Oscuro / Stitch)</span>
           </div>
         </div>
       </section>
 
-      {/* 6. Alerts & Ambient States */}
       <section className="space-y-4">
-        <h3 className="text-lg font-bold text-on-surface border-l-4 border-primary pl-2.5">
-          6. Alerts & Ambient States
-        </h3>
-        <div className="p-5 bg-surface-container/40 rounded-xl border border-outline-variant/25 space-y-4">
-          {/* Error alert */}
-          <div className="p-3.5 rounded-lg bg-error-container text-on-error-container border border-error/20 flex items-center gap-2.5 text-sm">
-            <span className="material-symbols-outlined text-error">error</span>
-            <span>Credenciales incorrectas. Verifique e intente de nuevo.</span>
-          </div>
-
-          {/* Pulse badge */}
-          <div className="flex items-center space-x-2 bg-surface-container-lowest/50 p-3 rounded-lg border border-outline-variant/20 inline-flex">
-            <span className="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
-            <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">
-              Server Operational
-            </span>
-          </div>
+        <h3 className="text-lg font-bold text-on-surface border-l-4 border-primary pl-3">6. Reglas de uso</h3>
+        <div className="vt-surface-card p-6 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-on-surface-variant">
+          <p><strong className="text-on-surface">Foco visible:</strong> todo control interactivo debe poder recorrerse con teclado.</p>
+          <p><strong className="text-on-surface">Iconos:</strong> las acciones solo con icono requieren `aria-label` o `title`.</p>
+          <p><strong className="text-on-surface">Estados:</strong> loading, error, vacío y éxito deben tener texto visible en español.</p>
+          <p><strong className="text-on-surface">Consistencia:</strong> reutiliza tokens y evita colores hexadecimales locales salvo casos justificados.</p>
         </div>
       </section>
     </div>

@@ -38,7 +38,7 @@ export default function Generos() {
   };
 
   useEffect(() => {
-    cargarGeneros();
+    void Promise.resolve().then(cargarGeneros);
   }, []);
 
   const handleNuevo = () => {
@@ -128,10 +128,10 @@ export default function Generos() {
             ),
             3: (_data: unknown, row: Genero) => (
               <>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)}>
+                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
                   <FontAwesomeIcon icon={faPen} />
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => handleEliminar(row.genero_id)}>
+                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.genero_id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </>
