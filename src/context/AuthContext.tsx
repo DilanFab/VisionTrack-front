@@ -53,9 +53,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     try {
       const response = await authService.login(email, password);
-      setToken(response.token);
+      setToken(response.accessToken);
       setUser(response.usuario);
-      localStorage.setItem("token", response.token);
+      localStorage.setItem("token", response.accessToken);
+      localStorage.setItem("refreshToken", response.refreshToken);
       localStorage.setItem("user", JSON.stringify(response.usuario));
     } catch (error: any) {
       // Clear credentials on failure
@@ -70,14 +71,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (payload: authService.RegisterPayload) => {
     try {
       const response = await authService.register(payload);
-      setToken(response.token);
+      setToken(response.accessToken);
       setUser(response.usuario);
-      localStorage.setItem("token", response.token);
+      localStorage.setItem("token", response.accessToken);
+      localStorage.setItem("refreshToken", response.refreshToken);
       localStorage.setItem("user", JSON.stringify(response.usuario));
     } catch (error: any) {
       setToken(null);
       setUser(null);
       localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
       localStorage.removeItem("user");
       throw error;
     }
@@ -87,6 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(null);
     setUser(null);
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
   };
 

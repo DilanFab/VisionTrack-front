@@ -305,8 +305,8 @@ export default function Pacientes() {
           className="table table-striped table-bordered"
           options={{ language: idiomaEspanol }}
           slots={{
-            2: (_data: unknown, row: Paciente) => row.perfil.usuario.persona.persona_cedula,
-            3: (_data: unknown, row: Paciente) => nombreCompleto(row.perfil.usuario.persona),
+            2: (_data: unknown, row: Paciente) => <span>{row.perfil.usuario.persona.persona_cedula}</span>,
+            3: (_data: unknown, row: Paciente) => <span>{nombreCompleto(row.perfil.usuario.persona)}</span>,
             4: (_data: unknown, row: Paciente) => (
               <Badge bg="info">{row.perfil.rol.rol_nombre}</Badge>
             ),

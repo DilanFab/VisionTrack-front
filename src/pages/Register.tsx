@@ -60,7 +60,7 @@ const Register: React.FC = () => {
       if (hasAdminAccess) {
         navigate("/admin/dashboard", { replace: true });
       } else if (user.roles.includes("Paciente")) {
-        navigate("/portal", { replace: true });
+        navigate("/portal/dashboard", { replace: true });
       } else {
         navigate("/unauthorized", { replace: true });
       }
@@ -155,7 +155,7 @@ const Register: React.FC = () => {
             if (hasAdminAccess) {
               navigate("/admin/dashboard");
             } else if (parsedUser.roles.includes("Paciente")) {
-              navigate("/portal");
+              navigate("/portal/dashboard");
             } else {
               navigate("/unauthorized");
             }
