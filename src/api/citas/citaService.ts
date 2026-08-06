@@ -1,10 +1,16 @@
 import api from "../axios";
 import type { Cita, CitaPayload } from "../../types/citas/Cita";
+import { unwrapApiList, type PaginatedApiResponse } from "../../lib/apiList";
 
 const BASE_URL = "/api/citas";
 
-export const getCitas = async (): Promise<Cita[]> => {
-  const { data } = await api.get<Cita[]>(BASE_URL);
+export const getCitas = async (params?: { doctor_id?: number; fecha?: string; estado_cita_id?: number }): Promise<Cita[]> => {
+  const { data } = await api.get<Cita[] | PaginatedApiResponse<Cita>>(BASE_URL, { params });
+  return unwrapApiList(data);
+};
+
+export const getCita = async (id: number): Promise<Cita> => {
+  const { data } = await api.get<Cita>(`${BASE_URL}/${id}`);
   return data;
 };
 

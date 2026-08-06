@@ -6,6 +6,7 @@ import { useTheme } from "../context/useTheme";
 import api from "../api/axios";
 import logoImg from "../assets/logo.svg";
 import { getApiErrorMessage } from "../lib/apiError";
+import { getDefaultRouteForRoles } from "../lib/roleCapabilities";
 
 interface Genero {
   genero_id: number;
@@ -56,16 +57,7 @@ const Register: React.FC = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated && user && status === "idle") {
-      const hasAdminAccess = user.roles.some(
-        (r) => r === "Administrador" || r === "Médico" || r === "Recepcionista"
-      );
-      if (hasAdminAccess) {
-        navigate("/admin/dashboard", { replace: true });
-      } else if (user.roles.includes("Paciente")) {
-        navigate("/portal/dashboard", { replace: true });
-      } else {
-        navigate("/unauthorized", { replace: true });
-      }
+navigate(getDefaultRouteForRoles(user.roles), { replace: true });
     }
   }, [isAuthenticated, user, status, navigate]);
 
@@ -152,16 +144,7 @@ const Register: React.FC = () => {
           try {
             const parsedUser = JSON.parse(savedUser) as { roles?: string[] };
             const roles = Array.isArray(parsedUser.roles) ? parsedUser.roles : [];
-            const hasAdminAccess = roles.some(
-              (r) => r === "Administrador" || r === "Médico" || r === "Recepcionista"
-            );
-            if (hasAdminAccess) {
-              navigate("/admin/dashboard");
-            } else if (roles.includes("Paciente")) {
-              navigate("/portal/dashboard");
-            } else {
-              navigate("/unauthorized");
-            }
+            navigate(getDefaultRouteForRoles(roles));
           } catch {
             navigate("/admin/dashboard");
           }

@@ -2,16 +2,7 @@ import api from "../axios";
 import type { Cita } from "../../types/citas/Cita";
 import type { Doctor } from "../../types/medicos/Doctor";
 import type { HorarioDoctor } from "../../types/medicos/HorarioDoctor";
-
-interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+import { unwrapApiList, type PaginatedApiResponse } from "../../lib/apiList";
 
 export interface HorarioOcupado {
   horario_doctor_id: number;
@@ -24,12 +15,9 @@ export interface CrearCitaPacientePayload {
   motivo: string;
 }
 
-const unwrapList = <T>(payload: T[] | PaginatedResponse<T>): T[] =>
-  Array.isArray(payload) ? payload : payload.data;
-
 export const getMisCitasPaciente = async (): Promise<Cita[]> => {
-  const { data } = await api.get<Cita[] | PaginatedResponse<Cita>>("/api/movil/mis-citas");
-  return unwrapList(data);
+  const { data } = await api.get<Cita[] | PaginatedApiResponse<Cita>>("/api/movil/mis-citas");
+  return unwrapApiList(data);
 };
 
 export const getDoctoresPaciente = async (): Promise<Doctor[]> => {

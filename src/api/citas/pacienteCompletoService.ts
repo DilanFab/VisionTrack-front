@@ -1,11 +1,12 @@
 import api from "../axios";
 import type { Paciente, PacientePayload } from "../../types/citas/Paciente";
+import { unwrapApiList, type PaginatedApiResponse } from "../../lib/apiList";
 
 const BASE_URL = "/api/pacientes-completos";
 
 export const getPacientesCompletos = async (): Promise<Paciente[]> => {
-  const { data } = await api.get<Paciente[]>(BASE_URL);
-  return data;
+  const { data } = await api.get<Paciente[] | PaginatedApiResponse<Paciente>>(BASE_URL);
+  return unwrapApiList(data);
 };
 
 export const createPacienteCompleto = async (payload: PacientePayload): Promise<Paciente> => {

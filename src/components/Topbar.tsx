@@ -3,6 +3,7 @@ import React from "react";
 import { useTheme } from "../context/useTheme";
 import { useAuth } from "../context/useAuth";
 import { resolveUsuarioImagenUrl } from "../lib/imagenUsuario";
+import { getFunctionalRoleLabel } from "../lib/roleCapabilities";
 
 interface TopbarProps {
   collapsed: boolean;
@@ -21,7 +22,7 @@ export const Topbar: React.FC<TopbarProps> = ({
   const { user } = useAuth();
 
   const userName = user?.persona.nombre || "Usuario";
-  const userRole = user?.roles[0] || "Miembro del Equipo";
+  const userRole = getFunctionalRoleLabel(user?.roles);
   const userInitial = userName.charAt(0).toUpperCase();
   const avatarUrl = resolveUsuarioImagenUrl(user?.usuario_imagen);
 

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import * as authService from "../api/authService";
+import { AUTH_SESSION_EXPIRED_EVENT } from "../api/axios";
 import { AuthContext, type User } from "./AuthContextValue";
 
 const clearStoredAuth = () => {
@@ -62,6 +63,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     }
   };
+
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setToken(null);
+      setUser(null);
+      clearStoredAuth();
+    };
+
+    window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired);
+    return () => {
+      window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired);
+    };
+  }, []);
 
   const logout = () => {
     setToken(null);

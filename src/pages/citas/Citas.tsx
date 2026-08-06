@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import DataTable from "datatables.net-react";
+import { Link } from "react-router-dom";
 import { Button, Modal, Form, Badge, Spinner, Alert } from "react-bootstrap";
 import { getCitas, createCita, updateCita, deleteCita } from "../../api/citas/citaService";
 import { getDoctoresCompletos } from "../../api/medicos/doctorCompletoService";
@@ -17,6 +18,9 @@ import { idiomaEspanol } from "../../lib/datatableEsLang";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { confirmarEliminacion, mostrarExito, mostrarError } from "../../lib/alerts";
+import { getApiErrorMessage, getApiStatusCode } from "../../lib/apiError";
+import { useAuth } from "../../context/useAuth";
+import { can, hasDoctorRole, hasReceptionistRole, canReadClinicalSupervision } from "../../lib/roleCapabilities";
 
 const initialForm = {
   historia_clinica_id: "",
@@ -46,6 +50,7 @@ const formatFechaHora = (cita: Cita) => {
 };
 
 export default function Citas() {
+  const { user } = useAuth();
   const [citas, setCitas] = useState<Cita[]>([]);
   const [doctores, setDoctores] = useState<Doctor[]>([]);
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
@@ -65,30 +70,90 @@ export default function Citas() {
   const [horariosDoctor, setHorariosDoctor] = useState<HorarioDoctor[]>([]);
   const [cargandoHorarios, setCargandoHorarios] = useState(false);
 
-  const cargarDatos = async () => {
+  const puedeGestionarCitas = can(user?.roles, "appointments:manage");
+  const esDoctorOptometra = hasDoctorRole(user?.roles);
+  const esRecepcionista = hasReceptionistRole(user?.roles);
+  const modoSupervisor = canReadClinicalSupervision(user?.roles);
+
+  const mensajePermisosCitas = useCallback((error: unknown) => {
+    const status = getApiStatusCode(error);
+    if (status === 403 && esRecepcionista) {
+      return "La API todavía no autoriza al rol Recepcionista para gestionar citas. Se requiere habilitar ese rol en /api/citas.";
+    }
+    if (status === 403 && esDoctorOptometra) {
+      return "La API rechazó las citas del Doctor/Optómetra. Revisa que el backend acepte el rol técnico Médico/Medico en /api/citas.";
+    }
+    return getApiErrorMessage(error, "No se pudieron cargar las citas. Verifica que el backend esté corriendo.");
+  }, [esDoctorOptometra, esRecepcionista]);
+
+  const mensajePermisosCatalogos = useCallback((error: unknown) => {
+    const status = getApiStatusCode(error);
+    if (status === 403 && esRecepcionista) {
+      return "La API restringe los catálogos de pacientes/doctores a Administrador; Recepción necesita acceso de lectura/creación para agendar.";
+    }
+    return getApiErrorMessage(error, "No se pudieron cargar los catálogos necesarios para agendar.");
+  }, [esRecepcionista]);
+
+  const cargarDatos = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      const [citasData, doctoresData, pacientesData, estadosData] = await Promise.all([
+
+      const [citasResult, doctoresResult, pacientesResult, estadosResult] = await Promise.allSettled([
         getCitas(),
-        getDoctoresCompletos(),
-        getPacientesCompletos(),
-        getEstadosCita(),
+        puedeGestionarCitas ? getDoctoresCompletos() : Promise.resolve<Doctor[]>([]),
+        puedeGestionarCitas ? getPacientesCompletos() : Promise.resolve<Paciente[]>([]),
+        puedeGestionarCitas ? getEstadosCita() : Promise.resolve<EstadoCita[]>([]),
       ]);
-      setCitas(citasData);
-      setDoctores(doctoresData);
-      setPacientes(pacientesData);
-      setEstadosCita(estadosData);
-    } catch {
-      setError("No se pudo conectar con la API. Verifica que el backend esté corriendo.");
+
+      const errores: string[] = [];
+
+      if (citasResult.status === "fulfilled") {
+        setCitas(citasResult.value);
+      } else {
+        setCitas([]);
+        errores.push(mensajePermisosCitas(citasResult.reason));
+      }
+
+      if (doctoresResult.status === "fulfilled") {
+        setDoctores(doctoresResult.value);
+      } else {
+        setDoctores([]);
+        errores.push(mensajePermisosCatalogos(doctoresResult.reason));
+      }
+
+      if (pacientesResult.status === "fulfilled") {
+        setPacientes(pacientesResult.value);
+      } else {
+        setPacientes([]);
+        errores.push(mensajePermisosCatalogos(pacientesResult.reason));
+      }
+
+      if (estadosResult.status === "fulfilled") {
+        setEstadosCita(estadosResult.value);
+      } else {
+        setEstadosCita([]);
+        errores.push(getApiErrorMessage(estadosResult.reason, "No se pudieron cargar los estados de cita."));
+      }
+
+      setError([...new Set(errores)].join(" "));
     } finally {
       setLoading(false);
     }
-  };
+  }, [mensajePermisosCatalogos, mensajePermisosCitas, puedeGestionarCitas]);
 
   useEffect(() => {
-    void Promise.resolve().then(cargarDatos);
-  }, []);
+    void cargarDatos();
+  }, [cargarDatos]);
+
+  const citasVisibles = useMemo(() => {
+    if (!esDoctorOptometra) return citas;
+    return citas.filter((cita) => cita.horario_doctor.doctor.perfil.usuario.usuario_id === user?.usuario_id);
+  }, [citas, esDoctorOptometra, user?.usuario_id]);
+
+  const advertenciaFiltroDoctor = esDoctorOptometra && citas.some((cita) => cita.horario_doctor.doctor.perfil.usuario.usuario_id === undefined)
+    ? "La API de citas no garantiza filtro por Doctor/Optómetra autenticado; se requiere soporte backend para seguridad completa."
+    : "";
 
   const pacientesFiltrados = useMemo(() => {
     const q = buscarPaciente.trim().toLowerCase();
@@ -146,6 +211,10 @@ export default function Citas() {
   };
 
   const handleNuevo = () => {
+    if (!puedeGestionarCitas) {
+      mostrarError("Tu rol no puede agendar citas desde esta vista.");
+      return;
+    }
     setEditingId(null);
     setForm(initialForm);
     setPacienteInfo(null);
@@ -157,6 +226,10 @@ export default function Citas() {
   };
 
   const handleEditar = async (row: Cita) => {
+    if (!puedeGestionarCitas) {
+      mostrarError("Tu rol no puede editar citas.");
+      return;
+    }
     const pacientePersona = row.historia_clinica.perfil.usuario.persona;
     const doctorPersona = row.horario_doctor.doctor.perfil.usuario.persona;
 
@@ -183,6 +256,10 @@ export default function Citas() {
   };
 
   const handleEliminar = async (id: number) => {
+    if (!puedeGestionarCitas) {
+      mostrarError("Tu rol no puede cancelar citas.");
+      return;
+    }
     const confirmado = await confirmarEliminacion("La cita se cancelará.");
     if (!confirmado) return;
 
@@ -221,6 +298,10 @@ export default function Citas() {
   };
 
   const handleGuardar = async () => {
+    if (!puedeGestionarCitas) {
+      mostrarError("Tu rol no puede guardar citas.");
+      return;
+    }
     if (
       !form.historia_clinica_id ||
       !form.horario_doctor_id ||
@@ -268,11 +349,16 @@ export default function Citas() {
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3>Citas</h3>
-        <Button variant="primary" onClick={handleNuevo}>
-          <FontAwesomeIcon icon={faPlus} className="me-2" />
-          Agregar Cita
-        </Button>
+        <div>
+          <h3>{esDoctorOptometra ? "Mis citas" : "Citas"}</h3>
+          {modoSupervisor && <p className="text-muted small mb-0">Vista de supervisión: sin operación clínica directa.</p>}
+        </div>
+        {puedeGestionarCitas && (
+          <Button variant="primary" onClick={handleNuevo}>
+            <FontAwesomeIcon icon={faPlus} className="me-2" />
+            Agregar Cita
+          </Button>
+        )}
       </div>
 
       {error && (
@@ -281,11 +367,13 @@ export default function Citas() {
         </Alert>
       )}
 
+      {advertenciaFiltroDoctor && <Alert variant="warning">{advertenciaFiltroDoctor}</Alert>}
+
       {loading ? (
         <Spinner animation="border" />
       ) : (
         <DataTable
-          data={citas}
+          data={citasVisibles}
           columns={columns}
           className="table table-striped table-bordered"
           options={{ language: idiomaEspanol }}
@@ -299,14 +387,24 @@ export default function Citas() {
               </Badge>
             ),
             4: (_data: unknown, row: Cita) => (
-              <>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
-                  <FontAwesomeIcon icon={faPen} />
-                </Button>
-                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.cita_id)}>
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
-              </>
+              <div className="d-flex flex-wrap gap-2">
+                {puedeGestionarCitas && (
+                  <>
+                    <Button size="sm" variant="warning" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
+                      <FontAwesomeIcon icon={faPen} />
+                    </Button>
+                    <Button size="sm" variant="danger" title="Cancelar" aria-label="Cancelar cita" onClick={() => handleEliminar(row.cita_id)}>
+                      <FontAwesomeIcon icon={faTrash} />
+                    </Button>
+                  </>
+                )}
+                {esDoctorOptometra && row.estado_cita.estado_cita_nombre !== "Cancelada" && (
+                  <Link className="btn btn-sm btn-outline-primary" to={`/admin/citas/${row.cita_id}/examen/nuevo`}>
+                    Iniciar examen
+                  </Link>
+                )}
+                {!puedeGestionarCitas && !esDoctorOptometra && <span className="text-muted small">Solo lectura</span>}
+              </div>
             ),
           }}
         >
