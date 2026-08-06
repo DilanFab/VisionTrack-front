@@ -93,7 +93,7 @@ export default function Doctores() {
   };
 
   useEffect(() => {
-    cargarDatos();
+    void Promise.resolve().then(cargarDatos);
   }, []);
 
   useEffect(() => {
@@ -300,9 +300,9 @@ export default function Doctores() {
           className="table table-striped table-bordered"
           options={{ language: idiomaEspanol }}
           slots={{
-            1: (_data: unknown, row: Doctor) => <>{row.perfil.usuario.persona.persona_cedula}</>,
-            2: (_data: unknown, row: Doctor) => <>{nombreCompleto(row.perfil.usuario.persona)}</>,
-            3: (_data: unknown, row: Doctor) => <>{row.especialidad_medica.especialidad_medica_nombre}</>,
+            1: (_data: unknown, row: Doctor) => <span>{row.perfil.usuario.persona.persona_cedula}</span>,
+            2: (_data: unknown, row: Doctor) => <span>{nombreCompleto(row.perfil.usuario.persona)}</span>,
+            3: (_data: unknown, row: Doctor) => <span>{row.especialidad_medica.especialidad_medica_nombre}</span>,
             4: (_data: unknown, row: Doctor) => (
               <Badge bg={row.doctor_estado === "A" ? "success" : "secondary"}>
                 {row.doctor_estado === "A" ? "Activo" : "Inactivo"}
@@ -319,10 +319,10 @@ export default function Doctores() {
                 >
                   <FontAwesomeIcon icon={faCalendarWeek} />
                 </Button>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)}>
+                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
                   <FontAwesomeIcon icon={faPen} />
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => handleEliminar(row.doctor_id)}>
+                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.doctor_id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </>

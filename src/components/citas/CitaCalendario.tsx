@@ -40,9 +40,13 @@ const DIA_POR_INDICE: Record<number, DiaSemana> = {
   5: "Viernes",
 };
 
+// Los @db.Time llegan como ISO con fecha ficticia 1970-01-01Z: la hora debe
+// leerse en UTC (getUTCHours), no con getHours(), que aplicaría la zona
+// horaria del navegador y correría la hora (y rompería la comparación en
+// handleDateClick para zonas con offset distinto de 0).
 const horaLocal = (iso: string) => {
   const d = new Date(iso);
-  return { horas: d.getHours(), minutos: d.getMinutes() };
+  return { horas: d.getUTCHours(), minutos: d.getUTCMinutes() };
 };
 
 const formatHora = (iso: string) => {
@@ -65,7 +69,7 @@ export default function CitaCalendario({ horarios, ocupados, seleccion, onSelecc
       startTime: formatHora(h.horario_doctor_inicio),
       endTime: formatHora(h.horario_doctor_fin),
       display: "background",
-      color: "#ffc107",
+      color: "var(--warning-container)",
     }));
 
     const ocupadosEventos: EventInput[] = ocupados.flatMap((o) => {
@@ -78,8 +82,8 @@ export default function CitaCalendario({ horarios, ocupados, seleccion, onSelecc
           start: construirFechaLocal(o.cita_fecha, inicio.horas, inicio.minutos),
           end: construirFechaLocal(o.cita_fecha, fin.horas, fin.minutos),
           display: "block",
-          backgroundColor: "#dc3545",
-          borderColor: "#dc3545",
+          backgroundColor: "var(--error-container)",
+          borderColor: "var(--error)",
           title: "Ocupado",
         },
       ];
@@ -96,8 +100,8 @@ export default function CitaCalendario({ horarios, ocupados, seleccion, onSelecc
           start: construirFechaLocal(seleccion.cita_fecha, inicio.horas, inicio.minutos),
           end: construirFechaLocal(seleccion.cita_fecha, fin.horas, fin.minutos),
           display: "block",
-          backgroundColor: "#0d6efd",
-          borderColor: "#0d6efd",
+          backgroundColor: "var(--primary)",
+          borderColor: "var(--primary)",
           title: "Seleccionado",
         },
       ];
@@ -134,7 +138,7 @@ export default function CitaCalendario({ horarios, ocupados, seleccion, onSelecc
 
   if (horarios.length === 0) {
     return (
-      <div className="text-muted small border rounded p-3 text-center">
+      <div className="vt-empty-state small rounded-xl p-4 text-center text-on-surface-variant">
         Selecciona un doctor con horarios configurados para ver su disponibilidad.
       </div>
     );
@@ -142,25 +146,25 @@ export default function CitaCalendario({ horarios, ocupados, seleccion, onSelecc
 
   return (
     <div>
-      <div className="d-flex gap-3 mb-2 small">
+      <div className="d-flex flex-wrap gap-3 mb-3 small" aria-label="Leyenda de disponibilidad">
         <span>
           <span
             className="d-inline-block me-1"
-            style={{ width: 12, height: 12, backgroundColor: "#ffc107", borderRadius: 2 }}
+            style={{ width: 12, height: 12, backgroundColor: "var(--warning-container)", border: "1px solid var(--warning)", borderRadius: 3 }}
           />
           Disponible
         </span>
         <span>
           <span
             className="d-inline-block me-1"
-            style={{ width: 12, height: 12, backgroundColor: "#dc3545", borderRadius: 2 }}
+            style={{ width: 12, height: 12, backgroundColor: "var(--error-container)", border: "1px solid var(--error)", borderRadius: 3 }}
           />
           Ocupado
         </span>
         <span>
           <span
             className="d-inline-block me-1"
-            style={{ width: 12, height: 12, backgroundColor: "#0d6efd", borderRadius: 2 }}
+            style={{ width: 12, height: 12, backgroundColor: "var(--primary)", borderRadius: 3 }}
           />
           Seleccionado
         </span>

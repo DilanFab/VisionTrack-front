@@ -14,7 +14,6 @@ import type { Persona } from "../../types/usuarios/Persona";
 import type { Genero } from "../../types/usuarios/Genero";
 import { idiomaEspanol } from "../../lib/datatableEsLang";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PaginationBar from "../../components/PaginationBar";
 import {
   faPen,
   faTrash,
@@ -70,10 +69,6 @@ export default function Pacientes() {
   const [generos, setGeneros] = useState<Genero[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [total, setTotal] = useState(0);
-  const LIMITE = 20;
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -86,19 +81,15 @@ export default function Pacientes() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const cargarDatos = async (pagina?: number) => {
+  const cargarDatos = async () => {
     try {
       setLoading(true);
       setError("");
-      const pg = pagina ?? page;
       const [pacientesData, generosData] = await Promise.all([
-        getPacientesCompletos({ page: pg, limit: LIMITE }),
+        getPacientesCompletos(),
         getGeneros(),
       ]);
-      setPacientes(pacientesData.data);
-      setPage(pacientesData.pagination.page);
-      setTotalPages(pacientesData.pagination.totalPages);
-      setTotal(pacientesData.pagination.total);
+      setPacientes(pacientesData);
       setGeneros(generosData);
     } catch {
       setError("No se pudo conectar con la API. Verifica que el backend esté corriendo.");
@@ -107,12 +98,8 @@ export default function Pacientes() {
     }
   };
 
-  const handlePageChange = (nuevaPagina: number) => {
-    cargarDatos(nuevaPagina);
-  };
-
   useEffect(() => {
-    cargarDatos(1);
+    void Promise.resolve().then(cargarDatos);
   }, []);
 
   useEffect(() => {
@@ -312,15 +299,14 @@ export default function Pacientes() {
       {loading ? (
         <Spinner animation="border" />
       ) : (
-        <>
         <DataTable
           data={pacientes}
           columns={columns}
           className="table table-striped table-bordered"
-          options={{ language: idiomaEspanol, paging: false }}
+          options={{ language: idiomaEspanol }}
           slots={{
-            2: (_data: unknown, row: Paciente) => <>{row.perfil.usuario.persona.persona_cedula}</>,
-            3: (_data: unknown, row: Paciente) => <>{nombreCompleto(row.perfil.usuario.persona)}</>,
+            2: (_data: unknown, row: Paciente) => <span>{row.perfil.usuario.persona.persona_cedula}</span>,
+            3: (_data: unknown, row: Paciente) => <span>{nombreCompleto(row.perfil.usuario.persona)}</span>,
             4: (_data: unknown, row: Paciente) => (
               <Badge bg="info">{row.perfil.rol.rol_nombre}</Badge>
             ),
@@ -331,10 +317,10 @@ export default function Pacientes() {
             ),
             6: (_data: unknown, row: Paciente) => (
               <>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)}>
+                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
                   <FontAwesomeIcon icon={faPen} />
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => handleEliminar(row.historia_clinica_id)}>
+                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.historia_clinica_id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </>
@@ -353,14 +339,6 @@ export default function Pacientes() {
             </tr>
           </thead>
         </DataTable>
-        <PaginationBar
-          page={page}
-          totalPages={totalPages}
-          total={total}
-          limit={LIMITE}
-          onPageChange={handlePageChange}
-        />
-        </>
       )}
 
       <Modal show={showModal} onHide={handleCerrarModal} size="lg" scrollable>

@@ -1,14 +1,22 @@
+import { SymbolIcon } from "../components/SymbolIcon";
 import React from "react";
-import { useTheme } from "../context/ThemeContext";
-import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/useTheme";
+import { useAuth } from "../context/useAuth";
 import { resolveUsuarioImagenUrl } from "../lib/imagenUsuario";
 
 interface TopbarProps {
   collapsed: boolean;
   onToggleSidebar: () => void;
+  onOpenMobileSidebar?: () => void;
+  searchPlaceholder?: string;
 }
 
-export const Topbar: React.FC<TopbarProps> = ({ collapsed, onToggleSidebar }) => {
+export const Topbar: React.FC<TopbarProps> = ({
+  collapsed,
+  onToggleSidebar,
+  onOpenMobileSidebar,
+  searchPlaceholder = "Buscar pacientes, historiales, diagnósticos...",
+}) => {
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
 
@@ -17,58 +25,64 @@ export const Topbar: React.FC<TopbarProps> = ({ collapsed, onToggleSidebar }) =>
   const userInitial = userName.charAt(0).toUpperCase();
   const avatarUrl = resolveUsuarioImagenUrl(user?.usuario_imagen);
 
+  const handleMenuClick = () => {
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      onToggleSidebar();
+      return;
+    }
+    onOpenMobileSidebar?.();
+  };
+
   return (
-    <header className="flex justify-between items-center h-16 px-8 bg-surface-container border-b border-outline-variant sticky top-0 z-40">
+    <header className="flex justify-between items-center min-h-16 px-4 sm:px-6 lg:px-8 bg-surface-container/90 backdrop-blur-xl border-b border-outline-variant sticky top-0 z-40">
       {/* Left: Sidebar Toggle + Search */}
-      <div className="flex items-center gap-4 flex-grow max-w-xl">
+      <div className="flex items-center gap-3 sm:gap-4 flex-grow max-w-xl">
         <button
-          onClick={onToggleSidebar}
-          className="hidden md:inline-flex p-2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+          type="button"
+          onClick={handleMenuClick}
+          className="inline-flex p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-variant/70 transition-colors cursor-pointer"
           title={collapsed ? "Expandir menú" : "Colapsar menú"}
+          aria-label={collapsed ? "Expandir menú" : "Abrir o colapsar menú"}
         >
-          <span className="material-symbols-outlined">
-            {collapsed ? "menu_open" : "menu"}
-          </span>
+          <SymbolIcon name={collapsed ? "menu_open" : "menu"} />
         </button>
 
-        <div className="relative w-full">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
-            search
-          </span>
+        <div className="relative w-full hidden sm:block">
+          <SymbolIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-outline" />
           <input
-            className="w-full bg-surface-dim border border-outline-variant rounded-full py-2 pl-10 pr-4 text-on-surface placeholder:text-outline focus:outline-none focus:border-primary transition-colors text-sm"
-            placeholder="Buscar pacientes, historiales, diagnósticos..."
+            className="w-full bg-surface-container-lowest border border-outline-variant rounded-full py-2.5 pl-10 pr-4 text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors text-sm"
+            placeholder={searchPlaceholder}
             type="text"
           />
         </div>
       </div>
 
       {/* Right: Actions, Theme Switcher & Profile */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3 sm:gap-5">
         <div className="flex items-center gap-4">
           {/* Theme Switcher Button */}
           <button
+            type="button"
             onClick={toggleTheme}
-            className="p-2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+            className="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-variant/70 transition-colors cursor-pointer"
             title={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
+            aria-label={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
           >
-            <span className="material-symbols-outlined">
-              {theme === "light" ? "dark_mode" : "light_mode"}
-            </span>
+            <SymbolIcon name={theme === "light" ? "dark_mode" : "light_mode"} />
           </button>
 
-          <button className="p-2 text-on-surface-variant hover:text-primary transition-colors relative cursor-pointer">
-            <span className="material-symbols-outlined">notifications</span>
+          <button type="button" className="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-variant/70 transition-colors relative cursor-pointer" aria-label="Ver notificaciones">
+            <SymbolIcon name="notifications" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full"></span>
           </button>
         </div>
 
-        <div className="h-8 w-[1px] bg-outline-variant"></div>
+        <div className="hidden sm:block h-8 w-[1px] bg-outline-variant"></div>
 
-        <div className="flex items-center gap-3 pl-2">
+        <div className="flex items-center gap-3 sm:pl-2">
           <div className="text-right hidden sm:block">
             <p className="text-[13px] font-semibold text-on-surface leading-none">{userName}</p>
-            <p className="text-[10px] text-outline uppercase tracking-widest font-bold mt-1">{userRole}</p>
+            <p className="text-[10px] text-secondary uppercase tracking-widest font-bold mt-1">{userRole}</p>
           </div>
           {avatarUrl ? (
             <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">

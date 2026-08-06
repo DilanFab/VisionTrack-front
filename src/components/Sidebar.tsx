@@ -1,13 +1,10 @@
+import { SymbolIcon } from "../components/SymbolIcon";
 import React, { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import logoImg from "../assets/logo.svg";
-import { getMenus } from "../api/rolesPermisos/menuService";
-import { getRoles } from "../api/rolesPermisos/rolService";
-import { getPermisos } from "../api/rolesPermisos/permisoService";
+import { getNavigationMenus } from "../api/authNavigationService";
 import type { Menu } from "../types/rolesPermisos/Menu";
-import type { Rol } from "../types/rolesPermisos/Rol";
-import type { Permiso } from "../types/rolesPermisos/Permiso";
 import { buildMenuTree, collectIds, getAncestorIds, type MenuNode } from "../lib/menuTree";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { findIconDefinition } from "@fortawesome/fontawesome-svg-core";
@@ -16,6 +13,9 @@ import { faQuestion, faChevronRight, faChevronDown } from "@fortawesome/free-sol
 
 interface SidebarProps {
   collapsed: boolean;
+  section: "admin" | "patient";
+  mobileOpen?: boolean;
+  onClose?: () => void;
 }
 
 const resolveIcon = (nombre: string | null | undefined): IconDefinition | null => {
@@ -24,12 +24,21 @@ const resolveIcon = (nombre: string | null | undefined): IconDefinition | null =
   return findIconDefinition({ prefix: "fas", iconName: trimmed as IconName }) ?? null;
 };
 
-export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
-  const { logout, hasRole, user } = useAuth();
+const normalizeMenuName = (name: string) =>
+  name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+const isPatientPortalNode = (node: MenuNode) => {
+  const name = normalizeMenuName(node.menu_nombre);
+  return name.includes("portal") && name.includes("paciente");
+};
+
+export const Sidebar: React.FC<SidebarProps> = ({ collapsed, section, mobileOpen = false, onClose }) => {
+  const { logout, hasRole } = useAuth();
 
   const [menus, setMenus] = useState<Menu[]>([]);
-  const [roles, setRoles] = useState<Rol[]>([]);
-  const [permisos, setPermisos] = useState<Permiso[]>([]);
   // Vacío por defecto: todos los grupos del menú arrancan cerrados. Acordeón
   // global: solo una rama (de raíz a hoja) puede estar abierta a la vez, así
   // que abrir cualquier grupo cierra todo lo demás salvo sus propios ancestros
@@ -40,48 +49,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   useEffect(() => {
     (async () => {
       try {
-        const [menusData, rolesData, permisosData] = await Promise.all([
-          getMenus(),
-          getRoles(),
-          getPermisos(),
-        ]);
+        const menusData = await getNavigationMenus();
         setMenus(menusData);
-        setRoles(rolesData);
-        setPermisos(permisosData);
       } catch (error) {
         console.error("No se pudo cargar el menú de navegación:", error);
       }
     })();
   }, []);
 
-  // Ids de rol del usuario autenticado (puede tener varios roles a la vez).
-  const rolIdsDelUsuario = useMemo(() => {
-    if (!user) return new Set<number>();
-    return new Set(
-      roles
-        .filter((r) => r.rol_estado === "A" && user.roles.includes(r.rol_nombre))
-        .map((r) => r.rol_id)
-    );
-  }, [roles, user]);
-
-  // Ids de menú habilitados por CUALQUIERA de los roles del usuario. Al ser un
-  // Set, los menús comunes entre varios roles quedan deduplicados de forma natural.
-  const menuIdsPermitidos = useMemo(
-    () =>
-      new Set(
-        permisos
-          .filter((p) => p.permiso_estado === "A" && rolIdsDelUsuario.has(p.rol_id))
-          .map((p) => p.menu_id)
-      ),
-    [permisos, rolIdsDelUsuario]
-  );
-
   const menusVisibles = useMemo(
-    () => menus.filter((m) => m.menu_estado === "A" && menuIdsPermitidos.has(m.menu_id)),
-    [menus, menuIdsPermitidos]
+    () => menus.filter((m) => m.menu_estado === "A"),
+    [menus]
   );
 
-  const menuTree = useMemo(() => buildMenuTree(menusVisibles), [menusVisibles]);
+  const menuTree = useMemo(() => {
+    const tree = buildMenuTree(menusVisibles);
+    if (section === "admin") {
+      return tree.filter((node) => !isPatientPortalNode(node));
+    }
+
+    const patientRoots = tree.filter(isPatientPortalNode);
+    return patientRoots.length > 0 ? patientRoots : tree;
+  }, [menusVisibles, section]);
 
   const menusPorId = useMemo(
     () => new Map(menusVisibles.map((m) => [m.menu_id, m])),
@@ -105,18 +94,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   };
 
   const navClass = (isActive: boolean) =>
-    `flex items-center rounded-lg transition-all ${
+    `flex items-center rounded-xl transition-all focus-visible:outline focus-visible:outline-3 focus-visible:outline-focus-ring focus-visible:outline-offset-2 ${
       collapsed ? "justify-center px-3 py-3" : "gap-4 px-4 py-3"
     } ${
       isActive
-        ? "text-primary font-bold border-r-2 border-primary bg-surface-variant/30"
-        : "text-on-surface-variant hover:bg-surface-variant"
+        ? "text-primary font-bold border-r-3 border-primary bg-primary-container/55 shadow-sm"
+        : "text-on-surface-variant hover:bg-surface-variant/70 hover:text-on-surface"
     }`;
 
-  // `menu_referencia` en BD se guarda relativo a la sección (ej. "/medicos/doctores"),
-  // sin el prefijo de layout, para que el mismo registro sirva sin importar bajo
-  // qué sección navegue el perfil del usuario (panel administrativo o portal).
-  const basePath = hasRole("Paciente") ? "/portal" : "/admin";
+  // `menu_referencia` en BD se guarda relativo a la sección (ej. "/medicos/doctores").
+  // La sección la decide el layout actual, no los roles del usuario: un usuario
+  // con rol Paciente y Administrador no debe ver rutas del portal dentro de /admin.
+  const basePath = section === "patient" ? "/portal" : "/admin";
   const resolveRuta = (referencia: string) => `${basePath}${referencia}`;
 
   // En el rail colapsado el ícono es la única pista visual disponible, así que
@@ -144,6 +133,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
           to={resolveRuta(node.menu_referencia)}
           className={({ isActive }) => navClass(isActive)}
           title={node.menu_nombre}
+          aria-label={node.menu_nombre}
+          onClick={onClose}
         >
           {renderIconCollapsed(node)}
         </NavLink>
@@ -179,6 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
           to={resolveRuta(node.menu_referencia)}
           className={({ isActive }) => navClass(isActive)}
           style={style}
+          onClick={onClose}
         >
           {renderIconExpanded(node)}
           <span className="font-medium">{node.menu_nombre}</span>
@@ -192,7 +184,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
         <button
           type="button"
           onClick={() => toggleGroup(node)}
-          className="w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-all text-on-surface-variant hover:bg-surface-variant cursor-pointer bg-transparent border-none text-left"
+          className="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all text-on-surface-variant hover:bg-surface-variant/70 hover:text-on-surface focus-visible:outline focus-visible:outline-3 focus-visible:outline-focus-ring focus-visible:outline-offset-2 cursor-pointer bg-transparent border-none text-left"
           style={style}
         >
           {renderIconExpanded(node)}
@@ -209,14 +201,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   };
 
   return (
-    <aside
-      className={`h-screen fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant flex flex-col py-8 z-50 sidebar-transition hidden md:flex ${
-        collapsed ? "w-[88px]" : "w-[280px]"
-      }`}
-      id="sidebar"
-    >
+    <>
+      {mobileOpen && (
+        <button
+          type="button"
+          aria-label="Cerrar menú de navegación"
+          className="fixed inset-0 z-40 bg-inverse-surface/35 backdrop-blur-[2px] md:hidden"
+          onClick={onClose}
+        />
+      )}
+      <aside
+        className={`h-screen fixed left-0 top-0 bg-surface-container-low/95 backdrop-blur-xl border-r border-outline-variant flex flex-col py-8 z-50 sidebar-transition w-[280px] md:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        } ${collapsed ? "md:w-[88px]" : "md:w-[280px]"}`}
+        id="sidebar"
+        aria-label="Navegación principal"
+      >
       {/* Header */}
       <div className={`mb-10 flex justify-center ${collapsed ? "px-2" : "px-8"}`}>
+        {!collapsed && mobileOpen && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-4 top-4 inline-flex items-center justify-center rounded-full p-2 text-on-surface-variant hover:bg-surface-variant md:hidden"
+            aria-label="Cerrar menú"
+          >
+            <SymbolIcon name="close" />
+          </button>
+        )}
         {collapsed ? (
           <div
             className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm select-none"
@@ -239,8 +251,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
             to="/admin/ui-guide"
             className={({ isActive }) => navClass(isActive)}
             title={collapsed ? "Guía de Estilos" : undefined}
+            aria-label="Guía de estilos"
+            onClick={onClose}
           >
-            <span className="material-symbols-outlined">palette</span>
+            <SymbolIcon name="palette" />
             {!collapsed && <span className="font-medium">Guía de Estilos</span>}
           </NavLink>
         )}
@@ -254,11 +268,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
             collapsed ? "justify-center px-3 py-3" : "gap-4 px-4 py-3"
           }`}
           title={collapsed ? "Cerrar Sesión" : undefined}
+          aria-label="Cerrar sesión"
         >
-          <span className="material-symbols-outlined text-error">logout</span>
+          <SymbolIcon name="logout" className="text-error" />
           {!collapsed && <span className="font-medium text-error">Cerrar Sesión</span>}
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 };

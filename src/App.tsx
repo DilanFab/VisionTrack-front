@@ -3,6 +3,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { AdminLayout } from "./layouts/AdminLayout";
+import { PatientLayout } from "./layouts/PatientLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import UiGuide from "./pages/UiGuide";
@@ -18,7 +19,10 @@ import EstadoCitas from "./pages/citas/EstadoCitas";
 import Pacientes from "./pages/citas/Pacientes";
 import Citas from "./pages/citas/Citas";
 import PatientDashboard from "./pages/portal/PatientDashboard";
-import Unauthorized from "./pages/Unauthorized";
+import PatientAppointments from "./pages/portal/PatientAppointments";
+import PatientScheduleAppointment from "./pages/portal/PatientScheduleAppointment";
+import PatientHistory from "./pages/portal/PatientHistory";
+import PatientProfile from "./pages/portal/PatientProfile";
 
 function App() {
   return (
@@ -34,7 +38,14 @@ function App() {
 
           {/* Patient Portal Section */}
           <Route element={<ProtectedRoute allowedRoles={["Paciente"]} />}>
-            <Route path="/portal" element={<PatientDashboard />} />
+            <Route path="/portal" element={<PatientLayout />}>
+              <Route index element={<Navigate to="/portal/dashboard" replace />} />
+              <Route path="dashboard" element={<PatientDashboard />} />
+              <Route path="citas" element={<PatientAppointments />} />
+              <Route path="agendar" element={<PatientScheduleAppointment />} />
+              <Route path="historial" element={<PatientHistory />} />
+              <Route path="perfil" element={<PatientProfile />} />
+            </Route>
           </Route>
 
           {/* Admin Section routes wrapped under ProtectedRoute and AdminLayout */}
@@ -71,9 +82,6 @@ function App() {
               </Route>
             </Route>
           </Route>
-
-          {/* Unauthorized page */}
-          <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* Fallback wildcard redirect */}
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />

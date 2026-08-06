@@ -1,0 +1,31 @@
+schema: spec-driven
+
+context: |
+  Idioma principal del proyecto: español.
+  El agente debe responder en español.
+  Los artefactos de OpenSpec deben escribirse en español.
+  Mantener en inglés los identificadores técnicos ya existentes: nombres de archivos, rutas, comandos, variables, componentes, hooks, APIs y tipos.
+  Para nombres de cambios usar kebab-case sin tildes, por ejemplo: agregar-login-roles.
+
+rules:
+  proposal:
+    - Escribir la propuesta en español.
+    - Incluir objetivo, alcance, fuera de alcance, riesgos y preguntas abiertas cuando aplique.
+  specs:
+    - Escribir requisitos en español.
+    - Incluir criterios de aceptación claros y verificables.
+  design:
+    - Escribir decisiones técnicas en español.
+    - Mantener nombres de componentes, hooks, endpoints y archivos tal como existen en el código.
+  tasks:
+    - Escribir tareas en español.
+    - Dividir tareas en pasos pequeños y verificables.
+
+operations:
+  apply:
+    guidance:
+      - Responder en español.
+      - Antes de modificar código, resumir qué tareas se van a ejecutar.
+  archive:
+    guidance:
+      - Resumir en español qué se completó y qué queda pendiente.

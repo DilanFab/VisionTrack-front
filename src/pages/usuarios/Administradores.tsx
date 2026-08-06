@@ -90,7 +90,7 @@ export default function Administradores() {
   };
 
   useEffect(() => {
-    cargarDatos();
+    void Promise.resolve().then(cargarDatos);
   }, []);
 
   // Esta pantalla gestiona específicamente a los usuarios con rol Administrador,
@@ -315,8 +315,8 @@ export default function Administradores() {
           className="table table-striped table-bordered"
           options={{ language: idiomaEspanol }}
           slots={{
-            1: (_data: unknown, row: UsuarioCompleto) => <>{row.persona.persona_cedula}</>,
-            2: (_data: unknown, row: UsuarioCompleto) => <>{nombreCompleto(row.persona)}</>,
+            1: (_data: unknown, row: UsuarioCompleto) => <span>{row.persona.persona_cedula}</span>,
+            2: (_data: unknown, row: UsuarioCompleto) => <span>{nombreCompleto(row.persona)}</span>,
             3: (_data: unknown, row: UsuarioCompleto) => (
               <>
                 {row.perfiles.map((p) => (
@@ -333,10 +333,10 @@ export default function Administradores() {
             ),
             5: (_data: unknown, row: UsuarioCompleto) => (
               <>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)}>
+                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
                   <FontAwesomeIcon icon={faPen} />
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => handleEliminar(row.usuario_id)}>
+                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.usuario_id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </>

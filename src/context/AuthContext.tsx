@@ -1,56 +1,35 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { useState } from "react";
 import * as authService from "../api/authService";
+import { AuthContext, type User } from "./AuthContextValue";
 
-interface User {
-  usuario_id: number;
-  usuario_nombre: string;
-  usuario_imagen: string;
-  persona: {
-    cedula: string;
-    nombre: string;
-    correo: string;
-  };
-  roles: string[];
-}
+const clearStoredAuth = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
+};
 
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (payload: authService.RegisterPayload) => Promise<void>;
-  logout: () => void;
-  isAuthenticated: boolean;
-  hasRole: (roleName: string) => boolean;
-}
+const readStoredAuth = (): { token: string | null; user: User | null } => {
+  const savedToken = localStorage.getItem("token");
+  const savedUser = localStorage.getItem("user");
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+  if (!savedToken || !savedUser) {
+    return { token: null, user: null };
+  }
+
+  try {
+    return { token: savedToken, user: JSON.parse(savedUser) as User };
+  } catch (error: unknown) {
+    console.error("Error parsing saved user details:", error);
+    clearStoredAuth();
+    return { token: null, user: null };
+  }
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check if token and user exist in localStorage
-    const savedToken = localStorage.getItem("token");
-    const savedUser = localStorage.getItem("user");
-
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      try {
-        const parsed = JSON.parse(savedUser);
-        if (!parsed.roles) parsed.roles = [];
-        setUser(parsed);
-      } catch (e) {
-        console.error("Error parsing saved user details:", e);
-        // Clear corrupt storage
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-      }
-    }
-    setLoading(false);
-  }, []);
+  const [storedAuth] = useState(readStoredAuth);
+  const [user, setUser] = useState<User | null>(() => storedAuth.user);
+  const [token, setToken] = useState<string | null>(() => storedAuth.token);
+  const loading = false;
 
   const login = async (email: string, password: string) => {
     try {
@@ -58,13 +37,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(response.accessToken);
       setUser(response.usuario);
       localStorage.setItem("token", response.accessToken);
+      localStorage.setItem("refreshToken", response.refreshToken);
       localStorage.setItem("user", JSON.stringify(response.usuario));
-    } catch (error: any) {
-      // Clear credentials on failure
+    } catch (error: unknown) {
       setToken(null);
       setUser(null);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      clearStoredAuth();
       throw error;
     }
   };
@@ -75,12 +53,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(response.accessToken);
       setUser(response.usuario);
       localStorage.setItem("token", response.accessToken);
+      localStorage.setItem("refreshToken", response.refreshToken);
       localStorage.setItem("user", JSON.stringify(response.usuario));
-    } catch (error: any) {
+    } catch (error: unknown) {
       setToken(null);
       setUser(null);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      clearStoredAuth();
       throw error;
     }
   };
@@ -88,8 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearStoredAuth();
   };
 
   const isAuthenticated = !!token;
@@ -114,12 +91,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };

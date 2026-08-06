@@ -1,9 +1,11 @@
+import { SymbolIcon } from "../components/SymbolIcon";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/useAuth";
+import { useTheme } from "../context/useTheme";
 import api from "../api/axios";
 import logoImg from "../assets/logo.svg";
+import { getApiErrorMessage } from "../lib/apiError";
 
 interface Genero {
   genero_id: number;
@@ -60,7 +62,7 @@ const Register: React.FC = () => {
       if (hasAdminAccess) {
         navigate("/admin/dashboard", { replace: true });
       } else if (user.roles.includes("Paciente")) {
-        navigate("/portal", { replace: true });
+        navigate("/portal/dashboard", { replace: true });
       } else {
         navigate("/unauthorized", { replace: true });
       }
@@ -148,32 +150,29 @@ const Register: React.FC = () => {
         const savedUser = localStorage.getItem("user");
         if (savedUser) {
           try {
-            const parsedUser = JSON.parse(savedUser);
-            const hasAdminAccess = parsedUser.roles.some(
-              (r: string) => r === "Administrador" || r === "Médico" || r === "Recepcionista"
+            const parsedUser = JSON.parse(savedUser) as { roles?: string[] };
+            const roles = Array.isArray(parsedUser.roles) ? parsedUser.roles : [];
+            const hasAdminAccess = roles.some(
+              (r) => r === "Administrador" || r === "Médico" || r === "Recepcionista"
             );
             if (hasAdminAccess) {
               navigate("/admin/dashboard");
-            } else if (parsedUser.roles.includes("Paciente")) {
-              navigate("/portal");
+            } else if (roles.includes("Paciente")) {
+              navigate("/portal/dashboard");
             } else {
               navigate("/unauthorized");
             }
-          } catch (e) {
+          } catch {
             navigate("/admin/dashboard");
           }
         } else {
           navigate("/admin/dashboard");
         }
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setStatus("error");
-      if (err.response && err.response.data && err.response.data.error) {
-        setErrorMsg(err.response.data.error);
-      } else {
-        setErrorMsg("Error al registrarse. Verifique los datos o intente más tarde.");
-      }
+      setErrorMsg(getApiErrorMessage(err, "Error al registrarse. Verifique los datos o intente más tarde."));
       setTimeout(() => {
         setStatus("idle");
       }, 4000);
@@ -189,11 +188,10 @@ const Register: React.FC = () => {
       <button
         onClick={toggleTheme}
         className="absolute top-4 right-4 p-3 rounded-full bg-surface-container-high/60 hover:bg-surface-container-highest/80 text-on-surface transition-all shadow-lg border border-outline-variant/30 backdrop-blur-md active:scale-95 cursor-pointer z-50"
-        title="Cambiar Tema"
+        title="Cambiar tema"
+        aria-label={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
       >
-        <span className="material-symbols-outlined flex items-center justify-center">
-          {theme === "light" ? "dark_mode" : "light_mode"}
-        </span>
+        <SymbolIcon name={theme === "light" ? "dark_mode" : "light_mode"} className="flex items-center justify-center" />
       </button>
 
       {/* Background Blobs */}
@@ -220,7 +218,7 @@ const Register: React.FC = () => {
             </div>
             <h1 className="font-bold text-3xl text-primary tracking-tight"></h1>
             <p className="text-xs font-semibold text-on-surface-variant mt-1.5 uppercase tracking-widest opacity-80">
-              Crear Nueva Cuenta de Usuario
+              Crea tu cuenta de acceso
             </p>
           </header>
 
@@ -238,7 +236,7 @@ const Register: React.FC = () => {
                   : "text-on-surface-variant hover:text-on-surface"
               }`}
             >
-              Soy Paciente
+              Soy paciente
             </button>
             <button
               type="button"
@@ -252,14 +250,14 @@ const Register: React.FC = () => {
                   : "text-on-surface-variant hover:text-on-surface"
               }`}
             >
-              Soy Médico / Doctor
+              Soy médico
             </button>
           </div>
 
           {/* Alert Message */}
           {errorMsg && (
             <div className="mb-5 p-3 rounded-lg bg-error-container text-on-error-container border border-error/20 flex items-center gap-2.5 animate-fadeIn text-sm">
-              <span className="material-symbols-outlined text-error">error</span>
+              <SymbolIcon name="error" className="text-error" />
               <span>{errorMsg}</span>
             </div>
           )}
@@ -458,7 +456,7 @@ const Register: React.FC = () => {
             {/* Account Credentials */}
             <div className="border-t border-outline-variant/20 pt-4 space-y-4">
               <h3 className="text-xs font-bold text-primary tracking-wider uppercase ml-1">
-                Credenciales de Acceso
+                Credenciales de acceso
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Username */}
@@ -497,10 +495,9 @@ const Register: React.FC = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       disabled={status === "submitting" || status === "success"}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface transition-colors cursor-pointer"
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     >
-                      <span className="material-symbols-outlined text-sm">
-                        {showPassword ? "visibility_off" : "visibility"}
-                      </span>
+                      <SymbolIcon name={showPassword ? "visibility_off" : "visibility"} className="text-sm" />
                     </button>
                   </div>
                 </div>
@@ -535,27 +532,25 @@ const Register: React.FC = () => {
             >
               {status === "submitting" && (
                 <>
-                  <span className="material-symbols-outlined animate-spin mr-2">progress_activity</span>
-                  <span>Registrando datos en Supabase...</span>
+                  <SymbolIcon name="progress_activity" className="animate-spin mr-2" />
+                  <span>Creando cuenta segura...</span>
                 </>
               )}
               {status === "success" && (
                 <>
-                  <span className="material-symbols-outlined mr-2">check_circle</span>
-                  <span>¡Registro Exitoso! Iniciando sesión...</span>
+                  <SymbolIcon name="check_circle" className="mr-2" />
+                  <span>Registro exitoso. Iniciando sesión...</span>
                 </>
               )}
               {status === "idle" && (
                 <>
-                  <span>Registrar Cuenta</span>
-                  <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">
-                    arrow_forward
-                  </span>
+                  <span>Registrar cuenta</span>
+                  <SymbolIcon name="arrow_forward" className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
               {status === "error" && (
                 <>
-                  <span className="material-symbols-outlined mr-2">error</span>
+                  <SymbolIcon name="error" className="mr-2" />
                   <span>Intente de nuevo</span>
                 </>
               )}
