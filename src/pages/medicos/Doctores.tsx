@@ -93,7 +93,7 @@ export default function Doctores() {
   };
 
   useEffect(() => {
-    cargarDatos();
+    void Promise.resolve().then(cargarDatos);
   }, []);
 
   useEffect(() => {
@@ -319,10 +319,10 @@ export default function Doctores() {
                 >
                   <FontAwesomeIcon icon={faCalendarWeek} />
                 </Button>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)}>
+                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
                   <FontAwesomeIcon icon={faPen} />
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => handleEliminar(row.doctor_id)}>
+                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.doctor_id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </>

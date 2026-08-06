@@ -90,7 +90,7 @@ export default function Recepcionistas() {
   };
 
   useEffect(() => {
-    cargarDatos();
+    void Promise.resolve().then(cargarDatos);
   }, []);
 
   // Esta pantalla gestiona específicamente a los usuarios con rol Recepcionista,
@@ -333,10 +333,10 @@ export default function Recepcionistas() {
             ),
             5: (_data: unknown, row: UsuarioCompleto) => (
               <>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)}>
+                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
                   <FontAwesomeIcon icon={faPen} />
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => handleEliminar(row.usuario_id)}>
+                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.usuario_id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </>

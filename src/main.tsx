@@ -8,7 +8,9 @@ import { BrowserRouter } from "react-router-dom";
 
 import DataTable from "datatables.net-react";
 import DT from "datatables.net-bs5";
-DataTable.use(DT);
+
+const registerDataTableAdapter = DataTable.use.bind(DataTable);
+registerDataTableAdapter(DT);
 
 import "./lib/fontawesome";
 

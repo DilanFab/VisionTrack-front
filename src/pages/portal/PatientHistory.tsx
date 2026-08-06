@@ -1,3 +1,4 @@
+import { SymbolIcon } from "../../components/SymbolIcon";
 import React, { useEffect, useMemo, useState } from "react";
 import { getMisCitasPaciente } from "../../api/portal/pacientePortalService";
 import type { Cita } from "../../types/citas/Cita";
@@ -28,17 +29,17 @@ const PatientHistory: React.FC = () => {
   return (
     <div>
       <div className="mb-8">
-        <p className="text-xs uppercase tracking-widest text-outline font-bold mb-2">Portal del Paciente</p>
-        <h2 className="text-3xl font-bold text-on-surface">Historial Clínico</h2>
-        <p className="text-on-surface-variant text-sm mt-1">Resumen de atenciones y citas cerradas.</p>
+        <p className="text-xs uppercase tracking-widest text-outline font-bold mb-2">Portal del paciente</p>
+        <h2 className="text-3xl font-bold text-on-surface">Historial clínico visual</h2>
+        <p className="text-on-surface-variant text-sm mt-1">Consulta tus atenciones anteriores y el estado de tus citas.</p>
       </div>
 
-      <section className="bg-surface-container-low rounded-2xl border border-outline-variant p-6">
+      <section className="vt-surface-card rounded-2xl p-6">
         {loading ? (
-          <div className="p-8 text-center text-on-surface-variant">Cargando historial...</div>
+          <div className="p-8 text-center text-on-surface-variant"><SymbolIcon name="progress_activity" className="animate-spin align-middle mr-2" />Cargando historial...</div>
         ) : historial.length === 0 ? (
-          <div className="p-8 text-center">
-            <span className="material-symbols-outlined text-5xl text-outline mb-3">history_edu</span>
+          <div className="vt-empty-state p-8 text-center rounded-2xl">
+            <SymbolIcon name="history_edu" className="text-5xl text-outline mb-3" />
             <p className="font-bold text-on-surface">Aún no tienes atenciones en historial.</p>
             <p className="text-sm text-on-surface-variant mt-1">
               Las citas confirmadas, canceladas o completadas aparecerán aquí.

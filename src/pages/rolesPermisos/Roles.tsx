@@ -143,7 +143,7 @@ export default function Roles() {
   };
 
   useEffect(() => {
-    cargarDatos();
+    void Promise.resolve().then(cargarDatos);
   }, []);
 
   const handleNuevo = () => {
@@ -277,10 +277,10 @@ export default function Roles() {
             ),
             4: (_data: unknown, row: Rol) => (
               <>
-                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)}>
+                <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditar(row)} title="Editar" aria-label="Editar registro">
                   <FontAwesomeIcon icon={faPen} />
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => handleEliminar(row.rol_id)}>
+                <Button size="sm" variant="danger" title="Eliminar" aria-label="Eliminar registro" onClick={() => handleEliminar(row.rol_id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </>

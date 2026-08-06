@@ -10,6 +10,7 @@ import type { Doctor } from "../../types/medicos/Doctor";
 import type { HorarioDoctor, DiaSemana } from "../../types/medicos/HorarioDoctor";
 import { mostrarError, mostrarExito } from "../../lib/alerts";
 import { fechaInputHoy, formatHora, nombreCompleto } from "./patientPortalUtils";
+import { getApiErrorMessage } from "../../lib/apiError";
 
 const DIA_POR_INDICE: Record<number, DiaSemana | undefined> = {
   1: "Lunes",
@@ -45,9 +46,11 @@ const PatientScheduleAppointment: React.FC = () => {
 
   useEffect(() => {
     if (!doctorId) {
-      setHorarios([]);
-      setOcupados([]);
-      setHorarioId("");
+      void Promise.resolve().then(() => {
+        setHorarios([]);
+        setOcupados([]);
+        setHorarioId("");
+      });
       return;
     }
     (async () => {
@@ -91,8 +94,8 @@ const PatientScheduleAppointment: React.FC = () => {
       });
       mostrarExito("Cita agendada correctamente.");
       navigate("/portal/citas");
-    } catch (error: any) {
-      mostrarError(error?.response?.data?.error || "No se pudo agendar la cita.");
+    } catch (error: unknown) {
+      mostrarError(getApiErrorMessage(error, "No se pudo agendar la cita."));
     } finally {
       setSaving(false);
     }
@@ -101,23 +104,23 @@ const PatientScheduleAppointment: React.FC = () => {
   return (
     <div>
       <div className="mb-8">
-        <p className="text-xs uppercase tracking-widest text-outline font-bold mb-2">Portal del Paciente</p>
-        <h2 className="text-3xl font-bold text-on-surface">Agendar Cita</h2>
-        <p className="text-on-surface-variant text-sm mt-1">Selecciona doctor, fecha y horario disponible.</p>
+        <p className="text-xs uppercase tracking-widest text-outline font-bold mb-2">Portal del paciente</p>
+        <h2 className="text-3xl font-bold text-on-surface">Agendar cita visual</h2>
+        <p className="text-on-surface-variant text-sm mt-1">Elige especialista, fecha y horario disponible para recibir atención visual.</p>
       </div>
 
       <form onSubmit={guardar} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <section className="lg:col-span-7 bg-surface-container-low rounded-2xl border border-outline-variant p-6 space-y-5">
+        <section className="lg:col-span-7 vt-surface-card rounded-2xl p-6 space-y-5">
           <div>
             <label className="block text-sm font-bold text-on-surface mb-2">Doctor</label>
             <select
-              className="w-full rounded-lg border border-outline-variant bg-surface p-3 text-on-surface"
+              className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               value={doctorId}
               onChange={(event) => setDoctorId(event.target.value)}
               disabled={loading || saving}
               required
             >
-              <option value="">Selecciona un doctor</option>
+              <option value="">Selecciona un especialista</option>
               {doctores.map((doctor) => (
                 <option key={doctor.doctor_id} value={doctor.doctor_id}>
                   {nombreCompleto(doctor.perfil.usuario.persona)} -{" "}
@@ -132,7 +135,7 @@ const PatientScheduleAppointment: React.FC = () => {
             <input
               type="date"
               min={fechaInputHoy()}
-              className="w-full rounded-lg border border-outline-variant bg-surface p-3 text-on-surface"
+              className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               value={fecha}
               onChange={(event) => setFecha(event.target.value)}
               disabled={saving}
@@ -143,7 +146,7 @@ const PatientScheduleAppointment: React.FC = () => {
           <div>
             <label className="block text-sm font-bold text-on-surface mb-2">Horario disponible</label>
             <select
-              className="w-full rounded-lg border border-outline-variant bg-surface p-3 text-on-surface"
+              className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               value={horarioId}
               onChange={(event) => setHorarioId(event.target.value)}
               disabled={!doctorId || saving}
@@ -160,7 +163,7 @@ const PatientScheduleAppointment: React.FC = () => {
               ))}
             </select>
             {doctorId && diaSeleccionado && horariosDisponibles.length === 0 && (
-              <p className="text-xs text-on-surface-variant mt-2">No hay horarios disponibles para esta fecha.</p>
+              <p className="text-xs text-on-surface-variant mt-2">No hay horarios disponibles para esta fecha. Prueba con otro día de atención.</p>
             )}
           </div>
 
@@ -177,8 +180,8 @@ const PatientScheduleAppointment: React.FC = () => {
           </div>
         </section>
 
-        <aside className="lg:col-span-5 bg-surface-container-high rounded-2xl border border-outline-variant p-6 h-fit">
-          <h3 className="text-lg font-bold text-on-surface mb-4">Resumen</h3>
+        <aside className="lg:col-span-5 vt-surface-card rounded-2xl p-6 h-fit">
+          <h3 className="text-lg font-bold text-on-surface mb-4">Resumen de tu cita</h3>
           <div className="space-y-4 text-sm">
             <div>
               <p className="text-xs uppercase text-outline font-bold">Fecha</p>
@@ -191,9 +194,9 @@ const PatientScheduleAppointment: React.FC = () => {
             <button
               type="submit"
               disabled={saving || !horarioId || !motivo.trim()}
-              className="w-full mt-4 px-4 py-3 rounded-lg bg-primary text-on-primary font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full mt-4 px-4 py-3 rounded-xl vt-primary-action font-bold hover:brightness-95 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {saving ? "Agendando..." : "Confirmar cita"}
+              {saving ? "Agendando cita..." : "Confirmar cita"}
             </button>
           </div>
         </aside>
