@@ -11,7 +11,7 @@ import { idiomaEspanol } from "../../lib/datatableEsLang";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faArrowUp, faArrowDown, faExchangeAlt } from "@fortawesome/free-solid-svg-icons";
 import { mostrarExito, mostrarError } from "../../lib/alerts";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 
 const initialForm = {
   producto_id: "",
