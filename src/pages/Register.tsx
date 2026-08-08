@@ -20,7 +20,7 @@ interface Especialidad {
 }
 
 const Register: React.FC = () => {
-  const { register, isAuthenticated, user } = useAuth();
+  const { register, isAuthenticated, user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 

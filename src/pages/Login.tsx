@@ -9,7 +9,7 @@ import { getDefaultRouteForRoles } from "../lib/roleCapabilities";
 
 
 const Login: React.FC = () => {
-  const { login, isAuthenticated, user } = useAuth();
+  const { login, isAuthenticated, user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
