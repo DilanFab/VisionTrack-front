@@ -57,9 +57,14 @@ const Register: React.FC = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated && user && status === "idle") {
-      navigate(getDefaultRouteForRoles(user.roles), { replace: true });
+      const targetRoute = getDefaultRouteForRoles(user.roles);
+      if (targetRoute && targetRoute !== "/login") {
+        navigate(targetRoute, { replace: true });
+      } else {
+        logout();
+      }
     }
-  }, [isAuthenticated, user, status, navigate]);
+  }, [isAuthenticated, user, status, navigate, logout]);
 
   // Load genders and specialties
   useEffect(() => {
