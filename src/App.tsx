@@ -27,6 +27,11 @@ import PatientAppointments from "./pages/portal/PatientAppointments";
 import PatientScheduleAppointment from "./pages/portal/PatientScheduleAppointment";
 import PatientHistory from "./pages/portal/PatientHistory";
 import PatientProfile from "./pages/portal/PatientProfile";
+import CategoriasPage from "./pages/inventario/CategoriasPage";
+import ProductosPage from "./pages/inventario/ProductosPage";
+import MovimientosPage from "./pages/inventario/MovimientosPage";
+import Facturacion from "./pages/ventas/Facturacion";
+
 
 function App() {
   return (
@@ -89,8 +94,10 @@ function App() {
               {/* Recepción y operación administrativa de citas */}
               <Route element={<ProtectedRoute allowedRoles={["Administrador", "Recepcionista"]} />}>
                 <Route path="usuarios/pacientes" element={<Pacientes />} />
-                <Route path="inventario" element={<Generos />} />
-                <Route path="facturacion" element={<Generos />} />
+                <Route path="inventario/categorias" element={<CategoriasPage />} />
+                <Route path="inventario/productos" element={<ProductosPage />} />
+                <Route path="inventario/movimientos" element={<MovimientosPage />} />
+                <Route path="facturacion" element={<Facturacion />} />
               </Route>
             </Route>
           </Route>

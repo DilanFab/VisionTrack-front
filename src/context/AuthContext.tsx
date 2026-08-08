@@ -86,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAuthenticated = !!token;
 
   const hasRole = (roleName: string) => {
-    return user ? user.roles.includes(roleName) : false;
+    return user && Array.isArray(user.roles) ? user.roles.includes(roleName) : false;
   };
 
   return (

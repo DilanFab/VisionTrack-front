@@ -57,7 +57,7 @@ const Register: React.FC = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated && user && status === "idle") {
-navigate(getDefaultRouteForRoles(user.roles), { replace: true });
+      navigate(getDefaultRouteForRoles(user.roles), { replace: true });
     }
   }, [isAuthenticated, user, status, navigate]);
 
@@ -66,11 +66,14 @@ navigate(getDefaultRouteForRoles(user.roles), { replace: true });
     const loadMetadata = async () => {
       try {
         const [genRes, espRes] = await Promise.all([
-          api.get<Genero[]>("/api/generos"),
-          api.get<Especialidad[]>("/api/especialidades-medicas"),
+          api.get("/api/generos"),
+          api.get("/api/especialidades-medicas"),
         ]);
-        setGeneros(genRes.data);
-        setEspecialidades(espRes.data);
+        // Unwrap data if API returns { success, data: [...] }
+        const generosData = genRes.data?.data ?? genRes.data;
+        const especialidadesData = espRes.data?.data ?? espRes.data;
+        setGeneros(Array.isArray(generosData) ? generosData : []);
+        setEspecialidades(Array.isArray(especialidadesData) ? especialidadesData : []);
       } catch (err) {
         console.error("Error al cargar metadatos de registro:", err);
       }

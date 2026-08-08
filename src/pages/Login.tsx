@@ -25,7 +25,7 @@ const Login: React.FC = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user && status === "idle") {
-navigate(getDefaultRouteForRoles(user.roles), { replace: true });
+      navigate(getDefaultRouteForRoles(user.roles), { replace: true });
     }
   }, [isAuthenticated, user, status, navigate]);
 
