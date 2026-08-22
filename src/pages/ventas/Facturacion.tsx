@@ -56,6 +56,9 @@ export default function Facturacion() {
   const [historial, setHistorial] = useState<Factura[]>([]);
   const [cargandoHistorial, setCargandoHistorial] = useState(false);
   const [facturaDetalle, setFacturaDetalle] = useState<Factura | null>(null);
+  
+  // ─── Personas para autocomplete ──────────────────────────────────────────
+  const [personasBD, setPersonasBD] = useState<any[]>([]);
 
   const [_key, setKey] = useState(0); // para reset de carrito
 
@@ -63,6 +66,7 @@ export default function Facturacion() {
   useEffect(() => {
     getProductos().then(setProductos).catch(() => {});
     cargarHistorial();
+    api.get(`/api/personas`).then(({ data }) => setPersonasBD(data.data ?? [])).catch(() => {});
   }, []);
 
   const cargarHistorial = async () => {
@@ -84,13 +88,33 @@ export default function Facturacion() {
     setErrCliente("");
     setCliente(null);
     try {
-      const { data } = await api.get(`/api/personas`);
-      const personas: any[] = data.data ?? [];
-      const found = personas.find((p: any) => p.persona_cedula === busquedaCedula.trim());
+      const search = busquedaCedula.trim().toLowerCase();
+      
+      const found = personasBD.find((p: any) => 
+        p.persona_cedula === search ||
+        p.persona_primer_nombre.toLowerCase().includes(search) ||
+        p.persona_primer_apellido.toLowerCase().includes(search) ||
+        `${p.persona_primer_nombre} ${p.persona_primer_apellido}`.toLowerCase().includes(search)
+      );
+
       if (found) {
         setCliente(found);
       } else {
-        setErrCliente(`No se encontró ningún cliente con cédula "${busquedaCedula}"`);
+        // Fallback en caso de que la persona sea nueva y no esté en el estado inicial
+        const { data } = await api.get(`/api/personas`);
+        const personas: any[] = data.data ?? [];
+        const foundApi = personas.find((p: any) => 
+          p.persona_cedula === search ||
+          p.persona_primer_nombre.toLowerCase().includes(search) ||
+          p.persona_primer_apellido.toLowerCase().includes(search) ||
+          `${p.persona_primer_nombre} ${p.persona_primer_apellido}`.toLowerCase().includes(search)
+        );
+        if (foundApi) {
+          setCliente(foundApi);
+          setPersonasBD(personas);
+        } else {
+          setErrCliente(`No se encontró ningún cliente con "${busquedaCedula}"`);
+        }
       }
     } catch {
       setErrCliente("Error al buscar cliente");
@@ -235,12 +259,21 @@ export default function Facturacion() {
             </h2>
             <div className="flex gap-2">
               <Form.Control
-                placeholder="Buscar por cédula..."
+                list="lista-pacientes"
+                placeholder="Buscar por cédula o nombres..."
                 value={busquedaCedula}
                 onChange={(e) => setBusquedaCedula(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && buscarCliente()}
                 className="flex-1"
+                autoComplete="off"
               />
+              <datalist id="lista-pacientes">
+                {personasBD.map((p) => (
+                  <option key={p.persona_id} value={p.persona_cedula}>
+                    {p.persona_primer_nombre} {p.persona_primer_apellido}
+                  </option>
+                ))}
+              </datalist>
               <Button variant="primary" onClick={buscarCliente} disabled={buscandoCliente}>
                 {buscandoCliente ? <Spinner size="sm" /> : <FontAwesomeIcon icon={faSearch} />}
               </Button>
