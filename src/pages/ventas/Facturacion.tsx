@@ -249,44 +249,52 @@ export default function Facturacion() {
         <p className="text-on-surface-variant text-sm">Emite recibos internos para ventas y servicios de la óptica</p>
       </div>
 
-      <Row className="g-4">
-        {/* ── Panel izquierdo: carrito ── */}
-        <Col lg={7}>
+      <Row className="g-4 justify-content-center">
+        {/* ── Columna Central ── */}
+        <Col lg={10} xl={9}>
           {/* Cliente */}
           <div className="card bg-surface-container rounded-2xl p-5 mb-4 border border-outline-variant">
             <h2 className="text-base font-semibold text-on-surface mb-3 flex items-center gap-2">
               <FontAwesomeIcon icon={faUser} className="text-primary" /> Cliente
             </h2>
-            <div className="flex gap-2">
-              <Form.Control
-                list="lista-pacientes"
-                placeholder="Buscar por cédula o nombres..."
-                value={busquedaCedula}
-                onChange={(e) => setBusquedaCedula(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && buscarCliente()}
-                className="flex-1"
-                autoComplete="off"
-              />
-              <datalist id="lista-pacientes">
-                {personasBD.map((p) => (
-                  <option key={p.persona_id} value={p.persona_cedula}>
-                    {p.persona_primer_nombre} {p.persona_primer_apellido}
-                  </option>
-                ))}
-              </datalist>
-              <Button variant="primary" onClick={buscarCliente} disabled={buscandoCliente}>
-                {buscandoCliente ? <Spinner size="sm" /> : <FontAwesomeIcon icon={faSearch} />}
-              </Button>
-            </div>
-            {errCliente && <Alert variant="warning" className="mt-2 py-2 text-sm">{errCliente}</Alert>}
-            {cliente && (
-              <div className="mt-3 p-3 rounded-lg bg-primary/10 border border-primary/20">
-                <p className="font-semibold text-on-surface">
-                  {cliente.persona_primer_nombre} {cliente.persona_primer_apellido}
-                </p>
-                <p className="text-sm text-on-surface-variant">
-                  CI: {cliente.persona_cedula} · {cliente.persona_correo}
-                </p>
+            {!cliente ? (
+              <>
+                <div className="flex gap-2">
+                  <Form.Control
+                    list="lista-pacientes"
+                    placeholder="Buscar por cédula o nombres..."
+                    value={busquedaCedula}
+                    onChange={(e) => setBusquedaCedula(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && buscarCliente()}
+                    className="flex-1"
+                    autoComplete="off"
+                  />
+                  <datalist id="lista-pacientes">
+                    {personasBD.map((p) => (
+                      <option key={p.persona_id} value={p.persona_cedula}>
+                        {p.persona_primer_nombre} {p.persona_primer_apellido}
+                      </option>
+                    ))}
+                  </datalist>
+                  <Button variant="primary" onClick={buscarCliente} disabled={buscandoCliente}>
+                    {buscandoCliente ? <Spinner size="sm" /> : <FontAwesomeIcon icon={faSearch} />}
+                  </Button>
+                </div>
+                {errCliente && <Alert variant="warning" className="mt-3 py-2 text-sm">{errCliente}</Alert>}
+              </>
+            ) : (
+              <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 flex justify-between items-center">
+                <div>
+                  <p className="text-lg font-bold text-primary mb-1">
+                    {cliente.persona_primer_nombre} {cliente.persona_primer_apellido}
+                  </p>
+                  <p className="text-sm text-on-surface-variant">
+                    <span className="font-semibold text-on-surface">Cédula/RUC:</span> {cliente.persona_cedula} &nbsp;·&nbsp; <span className="font-semibold text-on-surface">Correo:</span> {cliente.persona_correo || 'No especificado'}
+                  </p>
+                </div>
+                <Button variant="outline-primary" size="sm" onClick={() => { setCliente(null); setBusquedaCedula(""); }}>
+                  Cambiar Cliente
+                </Button>
               </div>
             )}
           </div>
@@ -297,8 +305,8 @@ export default function Facturacion() {
               <h2 className="text-base font-semibold text-on-surface flex items-center gap-2 m-0">
                 <FontAwesomeIcon icon={faBox} className="text-secondary" /> Artículos
               </h2>
-              <Button variant="success" size="sm" onClick={abrirModal}>
-                <FontAwesomeIcon icon={faPlus} className="me-1" /> Agregar
+              <Button variant="success" onClick={abrirModal} className="px-4 py-2 font-bold shadow-sm rounded-lg transition-transform hover:scale-105">
+                <FontAwesomeIcon icon={faPlus} className="me-2" /> Agregar Artículo
               </Button>
             </div>
 
@@ -364,9 +372,9 @@ export default function Facturacion() {
                 {totales.sub5  > 0 && <div className="flex justify-between"><span className="text-on-surface-variant">Subtotal IVA 5%</span><span>${fmt(totales.sub5)}</span></div>}
                 {totales.sub8  > 0 && <div className="flex justify-between"><span className="text-on-surface-variant">Subtotal IVA 8%</span><span>${fmt(totales.sub8)}</span></div>}
                 {totales.sub15 > 0 && <div className="flex justify-between"><span className="text-on-surface-variant">Subtotal IVA 15%</span><span>${fmt(totales.sub15)}</span></div>}
-                {totales.iv5  > 0 && <div className="flex justify-between text-amber-400"><span>IVA 5%</span><span>${fmt(totales.iv5)}</span></div>}
-                {totales.iv8  > 0 && <div className="flex justify-between text-amber-400"><span>IVA 8%</span><span>${fmt(totales.iv8)}</span></div>}
-                {totales.iv15 > 0 && <div className="flex justify-between text-amber-400"><span>IVA 15%</span><span>${fmt(totales.iv15)}</span></div>}
+                {totales.iv5  > 0 && <div className="flex justify-between text-info font-medium"><span>IVA 5%</span><span>${fmt(totales.iv5)}</span></div>}
+                {totales.iv8  > 0 && <div className="flex justify-between text-info font-medium"><span>IVA 8%</span><span>${fmt(totales.iv8)}</span></div>}
+                {totales.iv15 > 0 && <div className="flex justify-between text-info font-medium"><span>IVA 15%</span><span>${fmt(totales.iv15)}</span></div>}
                 <div className="flex justify-between font-bold text-lg border-t border-outline-variant pt-2 mt-2">
                   <span>TOTAL</span><span className="text-primary">${fmt(totales.total)}</span>
                 </div>
@@ -406,11 +414,8 @@ export default function Facturacion() {
               </Button>
             </div>
           </div>
-        </Col>
-
-        {/* ── Panel derecho: historial reciente ── */}
-        <Col lg={5}>
-          <div className="card bg-surface-container rounded-2xl p-5 border border-outline-variant">
+          {/* ── Historial reciente ── */}
+          <div className="card bg-surface-container rounded-2xl p-5 border border-outline-variant mt-4">
             <h2 className="text-base font-semibold text-on-surface mb-3 flex items-center gap-2">
               <FontAwesomeIcon icon={faReceipt} className="text-primary" /> Últimas Facturas
             </h2>
