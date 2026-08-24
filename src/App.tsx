@@ -31,6 +31,7 @@ import CategoriasPage from "./pages/inventario/CategoriasPage";
 import ProductosPage from "./pages/inventario/ProductosPage";
 import MovimientosPage from "./pages/inventario/MovimientosPage";
 import Facturacion from "./pages/ventas/Facturacion";
+import ConfiguracionIva from "./pages/admin/ConfiguracionIva";
 
 
 function App() {
@@ -74,6 +75,7 @@ function App() {
                 <Route path="medicos/especialidades" element={<EspecialidadesMedicas />} />
                 <Route path="medicos/doctores" element={<Doctores />} />
                 <Route path="citas/estados" element={<EstadoCitas />} />
+                <Route path="configuracion-iva" element={<ConfiguracionIva />} />
               </Route>
               
               {/* Historias y supervisión clínica para Administrador y Doctor/Optómetra */}

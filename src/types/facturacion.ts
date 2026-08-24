@@ -67,3 +67,17 @@ export interface ResumenVentas {
   ventas_hoy: { total: number; cantidad: number };
   ventas_mes: { total: number; cantidad: number };
 }
+
+export interface ConfiguracionIva {
+  iva_id: number;
+  iva_porcentaje: number;
+  iva_descripcion: string;
+  iva_activo: boolean;
+  iva_estado: "A" | "I";
+}
+
+export interface ConfiguracionIvaPayload {
+  iva_porcentaje: number;
+  iva_descripcion: string;
+  iva_activo?: boolean;
+}
