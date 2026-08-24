@@ -8,7 +8,9 @@ import {
   deleteProducto,
   getCategoriasProducto,
 } from "../../api/inventarioService";
+import { getConfiguracionesIva } from "../../api/ventas/configuracionIvaService";
 import type { Producto, CategoriaProducto } from "../../types/inventario";
+import type { ConfiguracionIva } from "../../types/facturacion";
 import { idiomaEspanol } from "../../lib/datatableEsLang";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash, faPlus, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
@@ -24,11 +26,13 @@ const initialForm = {
   producto_stock_minimo: 5,
   producto_unidad_medida: "",
   producto_estado: "A",
+  iva_id: "",
 };
 
 export default function ProductosPage() {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [categorias, setCategorias] = useState<CategoriaProducto[]>([]);
+  const [ivas, setIvas] = useState<ConfiguracionIva[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -41,12 +45,14 @@ export default function ProductosPage() {
     try {
       setLoading(true);
       setError("");
-      const [prodData, catData] = await Promise.all([
+      const [prodData, catData, ivaData] = await Promise.all([
         getProductos(),
         getCategoriasProducto(),
+        getConfiguracionesIva(true),
       ]);
       setProductos(prodData);
       setCategorias(catData.filter(c => c.categoria_producto_estado === "A"));
+      setIvas(ivaData);
     } catch {
       setError("No se pudo conectar con la API.");
     } finally {
@@ -76,6 +82,7 @@ export default function ProductosPage() {
       producto_stock_minimo: producto.producto_stock_minimo,
       producto_unidad_medida: producto.producto_unidad_medida,
       producto_estado: producto.producto_estado,
+      iva_id: producto.iva_id ? producto.iva_id.toString() : "",
     });
     setShowModal(true);
   };
@@ -107,6 +114,7 @@ export default function ProductosPage() {
         producto_precio_unitario: Number(form.producto_precio_unitario),
         producto_stock_actual: Number(form.producto_stock_actual),
         producto_stock_minimo: Number(form.producto_stock_minimo),
+        iva_id: form.iva_id ? Number(form.iva_id) : null,
       };
 
       if (editingId) {
@@ -129,6 +137,11 @@ export default function ProductosPage() {
     { data: "producto_codigo", title: "Código" },
     { data: "producto_nombre", title: "Nombre" },
     { data: "categoria.categoria_producto_nombre", title: "Categoría", defaultContent: "N/A" },
+    { 
+      data: null, 
+      title: "IVA", 
+      render: (_data: any, _type: any, row: Producto) => row.configuracion_iva ? `${row.configuracion_iva.iva_porcentaje}%` : "No asignado" 
+    },
     { data: "producto_stock_actual", title: "Stock" },
     { data: null, title: "Estado", orderable: false },
     { data: null, title: "Acciones", orderable: false },
@@ -194,6 +207,7 @@ export default function ProductosPage() {
               <th>Código</th>
               <th>Nombre</th>
               <th>Categoría</th>
+              <th>IVA</th>
               <th>Stock</th>
               <th>Estado</th>
               <th>Acciones</th>
@@ -313,16 +327,36 @@ export default function ProductosPage() {
                 </Col>
             </Row>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Estado</Form.Label>
-              <Form.Select
-                value={form.producto_estado}
-                onChange={(e) => setForm({ ...form, producto_estado: e.target.value })}
-              >
-                <option value="A">Activo</option>
-                <option value="I">Inactivo</option>
-              </Form.Select>
-            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Tarifa de IVA</Form.Label>
+                  <Form.Select
+                    value={form.iva_id}
+                    onChange={(e) => setForm({ ...form, iva_id: e.target.value })}
+                  >
+                    <option value="">No Asignado</option>
+                    {ivas.map(iva => (
+                      <option key={iva.iva_id} value={iva.iva_id}>
+                        {iva.iva_descripcion} ({iva.iva_porcentaje}%)
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Estado</Form.Label>
+                  <Form.Select
+                    value={form.producto_estado}
+                    onChange={(e) => setForm({ ...form, producto_estado: e.target.value })}
+                  >
+                    <option value="A">Activo</option>
+                    <option value="I">Inactivo</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
           </Form>
         </Modal.Body>
         <Modal.Footer>

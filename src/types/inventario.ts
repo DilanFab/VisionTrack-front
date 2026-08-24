@@ -1,3 +1,5 @@
+import type { ConfiguracionIva } from "./facturacion";
+
 export interface CategoriaProducto {
   categoria_producto_id: number;
   categoria_producto_nombre: string;
@@ -16,7 +18,9 @@ export interface Producto {
   producto_stock_minimo: number;
   producto_unidad_medida: string;
   producto_estado: string; // "A" | "I"
+  iva_id?: number | null;
   categoria?: CategoriaProducto;
+  configuracion_iva?: ConfiguracionIva | null;
 }
 
 export interface MovimientoInventario {
