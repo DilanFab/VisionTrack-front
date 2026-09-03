@@ -165,6 +165,11 @@ export default function Facturacion() {
   };
 
   const confirmarItem = () => {
+    if (!Number.isFinite(cantidad) || cantidad <= 0) {
+      mostrarError("La cantidad debe ser mayor que cero.");
+      return;
+    }
+
     if (tipoItem === "producto") {
       if (!productoSelId) return;
       const prod = productos.find((p) => p.producto_id === Number(productoSelId));

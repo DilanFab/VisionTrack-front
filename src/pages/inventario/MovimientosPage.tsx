@@ -68,11 +68,18 @@ export default function MovimientosPage() {
         return;
     }
 
+    const authUser = user as typeof user & { persona_id?: number; id?: number };
+    const usuarioId = authUser.usuario_id ?? authUser.persona_id ?? authUser.id;
+    if (!usuarioId) {
+      mostrarError("Usuario sin identificador, por favor inicia sesión nuevamente.");
+      return;
+    }
+
     try {
       setSaving(true);
       await createMovimientoInventario({
         producto_id: Number(form.producto_id),
-        usuario_id: user.usuario_id, // Get from AuthContext
+        usuario_id: usuarioId,
         movimiento_tipo: form.movimiento_tipo,
         movimiento_cantidad: Number(form.movimiento_cantidad),
         movimiento_motivo: form.movimiento_motivo,
