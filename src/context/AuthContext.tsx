@@ -14,13 +14,20 @@ const readStoredAuth = (): { token: string | null; user: User | null } => {
   const savedUser = localStorage.getItem("user");
 
   if (!savedToken || !savedUser) {
+    clearStoredAuth();
     return { token: null, user: null };
   }
 
   try {
-    return { token: savedToken, user: JSON.parse(savedUser) as User };
+    const parsedUser = JSON.parse(savedUser) as User;
+    if (!parsedUser || typeof parsedUser !== "object" || !Array.isArray(parsedUser.roles) || parsedUser.roles.length === 0) {
+      console.warn("Sesión inválida o sin roles reconocidos en el almacenamiento local. Limpiando datos...");
+      clearStoredAuth();
+      return { token: null, user: null };
+    }
+    return { token: savedToken, user: parsedUser };
   } catch (error: unknown) {
-    console.error("Error parsing saved user details:", error);
+    console.error("Error al leer los datos de autenticación guardados:", error);
     clearStoredAuth();
     return { token: null, user: null };
   }
@@ -86,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAuthenticated = !!token;
 
   const hasRole = (roleName: string) => {
-    return user ? user.roles.includes(roleName) : false;
+    return user && Array.isArray(user.roles) ? user.roles.includes(roleName) : false;
   };
 
   return (
@@ -106,3 +113,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+
+export { useAuth } from "./useAuth";

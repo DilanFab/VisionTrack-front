@@ -235,7 +235,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, section, mobileOpen
     }
     if (hasAdminRole(user?.roles)) {
       return [
-        { to: "/admin/dashboard", label: "Supervisión", icon: "dashboard" },
         { to: "/admin/historial", label: "Supervisión clínica", icon: "clinical_notes" },
       ];
     }

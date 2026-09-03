@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading, user, logout } = useAuth();
 
   if (loading) {
     return (
@@ -24,16 +24,21 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user || !Array.isArray(user.roles) || user.roles.length === 0) {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && user) {
+  if (allowedRoles) {
     const hasAllowedRole = user.roles.some((role) =>
       hasRoleMatch(allowedRoles, (allowedRole) => allowedRole === role || allowedRole.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() === role.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase())
     );
     if (!hasAllowedRole) {
-      return <Navigate to={getDefaultRouteForRoles(user.roles)} replace />;
+      const defaultRoute = getDefaultRouteForRoles(user.roles);
+      if (!defaultRoute || defaultRoute === "/login") {
+        logout();
+        return <Navigate to="/login" replace />;
+      }
+      return <Navigate to={defaultRoute} replace />;
     }
   }
 
