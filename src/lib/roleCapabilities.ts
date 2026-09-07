@@ -103,7 +103,7 @@ export const isAdminPathAllowed = (path: string, roles: string[] | undefined): b
   }
 
   if (hasReceptionistRole(roles)) {
-    return ["/dashboard", "/citas", "/usuarios/pacientes", "/pacientes", "/disponibilidad", "/facturacion", "/caja", "/compras-reportes"].some((allowed) =>
+    return ["/dashboard", "/citas", "/usuarios/pacientes", "/pacientes", "/disponibilidad", "/inventario", "/facturacion", "/caja", "/compras-reportes"].some((allowed) =>
       normalizedPath.startsWith(allowed)
     );
   }
