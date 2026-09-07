@@ -12,6 +12,19 @@ export interface UsuarioCompleto {
     rol_id: number;
     perfil_estado: string;
     rol: Rol;
+    doctor?: {
+      doctor_id: number;
+      especialidad_medica_id: number;
+      doctor_estado: string;
+      especialidad_medica?: {
+        especialidad_medica_id: number;
+        especialidad_medica_nombre: string;
+      };
+    } | null;
+    historias_clinicas?: Array<{
+      historia_clinica_id: number;
+      historia_clinica_numero: string;
+    }>;
   }>;
 }
 
@@ -31,4 +44,5 @@ export interface UsuarioCompletoPayload {
   usuario_imagen: string;
   usuario_estado: string;
   rol_ids: number[];
+  especialidad_medica_id?: number;
 }

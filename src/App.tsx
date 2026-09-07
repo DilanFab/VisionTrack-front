@@ -13,6 +13,7 @@ import Menus from "./pages/rolesPermisos/Menus";
 import Roles from "./pages/rolesPermisos/Roles";
 import Administradores from "./pages/usuarios/Administradores";
 import Recepcionistas from "./pages/usuarios/Recepcionistas";
+import Usuarios from "./pages/usuarios/Usuarios";
 import EspecialidadesMedicas from "./pages/medicos/EspecialidadesMedicas";
 import Doctores from "./pages/medicos/Doctores";
 import EstadoCitas from "./pages/citas/EstadoCitas";
@@ -71,6 +72,7 @@ function App() {
                 <Route path="personal" element={<Generos />} />
                 <Route path="roles-permisos/menus" element={<Menus />} />
                 <Route path="roles-permisos/roles" element={<Roles />} />
+                <Route path="usuarios" element={<Usuarios />} />
                 <Route path="usuarios/generos" element={<Generos />} />
                 <Route path="usuarios/administradores" element={<Administradores />} />
                 <Route path="usuarios/recepcionistas" element={<Recepcionistas />} />
