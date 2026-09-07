@@ -32,6 +32,7 @@ import ProductosPage from "./pages/inventario/ProductosPage";
 import MovimientosPage from "./pages/inventario/MovimientosPage";
 import Facturacion from "./pages/ventas/Facturacion";
 import ConfiguracionIva from "./pages/admin/ConfiguracionIva";
+import CajaPage from "./pages/ventas/CajaPage";
 
 
 function App() {
@@ -100,6 +101,7 @@ function App() {
                 <Route path="inventario/productos" element={<ProductosPage />} />
                 <Route path="inventario/movimientos" element={<MovimientosPage />} />
                 <Route path="facturacion" element={<Facturacion />} />
+                <Route path="caja" element={<CajaPage />} />
               </Route>
             </Route>
           </Route>
