@@ -235,6 +235,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, section, mobileOpen
     }
     if (hasAdminRole(user?.roles)) {
       return [
+        { to: "/admin/usuarios", label: "Gestión de usuarios", icon: "groups" },
         { to: "/admin/historial", label: "Supervisión clínica", icon: "clinical_notes" },
       ];
     }
@@ -306,7 +307,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, section, mobileOpen
         ))}
 
         {/* Guía de Estilos - herramienta de desarrollo, no forma parte de tbl_menu */}
-        {(hasRole("Administrador") || hasRole("Médico")) && (
+        {(hasRole("Administrador") || hasRole("Medico") || hasRole("Médico")) && (
           <NavLink
             to="/admin/ui-guide"
             className={({ isActive }) => navClass(isActive)}

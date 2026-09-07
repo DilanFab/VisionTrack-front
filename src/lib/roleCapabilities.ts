@@ -1,7 +1,7 @@
 export const APP_ROLES = {
   ADMIN: "Administrador",
-  DOCTOR: "Médico",
-  DOCTOR_LEGACY: "Medico",
+  DOCTOR: "Medico",
+  DOCTOR_LEGACY: "Médico",
   RECEPTIONIST: "Recepcionista",
   PATIENT: "Paciente",
 } as const;
