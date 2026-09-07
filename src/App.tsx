@@ -62,7 +62,7 @@ function App() {
           </Route>
 
           {/* Admin Section routes wrapped under ProtectedRoute and AdminLayout */}
-          <Route element={<ProtectedRoute allowedRoles={["Administrador", "Médico", "Recepcionista"]} />}>
+          <Route element={<ProtectedRoute allowedRoles={["Administrador", "Medico", "Recepcionista"]} />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="citas" element={<Citas />} />
@@ -83,7 +83,7 @@ function App() {
               </Route>
               
               {/* Historias y supervisión clínica para Administrador y Doctor/Optómetra */}
-              <Route element={<ProtectedRoute allowedRoles={["Administrador", "Médico"]} />}>
+              <Route element={<ProtectedRoute allowedRoles={["Administrador", "Medico"]} />}>
                 <Route path="historial" element={<HistoriasClinicas />} />
                 <Route path="historial/:historiaId" element={<HistoriaClinicaDetalle />} />
                 <Route path="historial/:historiaId/examenes/:examenId" element={<ExamenOptometricoDetalle />} />
@@ -91,7 +91,7 @@ function App() {
               </Route>
 
               {/* Operación clínica solo para Doctor/Optómetra */}
-              <Route element={<ProtectedRoute allowedRoles={["Médico"]} />}>
+              <Route element={<ProtectedRoute allowedRoles={["Medico"]} />}>
                 <Route path="historial/:historiaId/examenes/nuevo" element={<ExamenOptometricoForm />} />
                 <Route path="historial/:historiaId/examenes/:examenId/editar" element={<ExamenOptometricoForm />} />
                 <Route path="citas/:citaId/examen/nuevo" element={<ExamenOptometricoForm />} />

@@ -307,7 +307,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, section, mobileOpen
         ))}
 
         {/* Guía de Estilos - herramienta de desarrollo, no forma parte de tbl_menu */}
-        {(hasRole("Administrador") || hasRole("Médico")) && (
+        {(hasRole("Administrador") || hasRole("Medico") || hasRole("Médico")) && (
           <NavLink
             to="/admin/ui-guide"
             className={({ isActive }) => navClass(isActive)}
