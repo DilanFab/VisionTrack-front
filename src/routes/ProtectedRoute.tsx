@@ -1,5 +1,5 @@
 import { SymbolIcon } from "../components/SymbolIcon";
-import React from "react";
+import React, { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { getDefaultRouteForRoles, hasRoleMatch } from "../lib/roleCapabilities";
@@ -9,7 +9,27 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading, user, logout } = useAuth();
+
+  const hasAllowedRole = allowedRoles && user && Array.isArray(user.roles)
+    ? user.roles.some((role) =>
+        hasRoleMatch(
+          allowedRoles,
+          (allowedRole) =>
+            allowedRole === role ||
+            allowedRole.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() ===
+              role.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+        )
+      )
+    : !allowedRoles;
+  const defaultRoute = allowedRoles && user && !hasAllowedRole ? getDefaultRouteForRoles(user.roles) : null;
+  const shouldLogout = Boolean(allowedRoles && user && !hasAllowedRole && (!defaultRoute || defaultRoute === "/login"));
+
+  useEffect(() => {
+    if (shouldLogout) {
+      logout();
+    }
+  }, [logout, shouldLogout]);
 
   if (loading) {
     return (
@@ -24,17 +44,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user || !Array.isArray(user.roles) || user.roles.length === 0) {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && user) {
-    const hasAllowedRole = user.roles.some((role) =>
-      hasRoleMatch(allowedRoles, (allowedRole) => allowedRole === role || allowedRole.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() === role.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase())
-    );
-    if (!hasAllowedRole) {
-      return <Navigate to={getDefaultRouteForRoles(user.roles)} replace />;
+  if (allowedRoles && !hasAllowedRole) {
+    if (shouldLogout) {
+      return <Navigate to="/login" replace />;
     }
+    return <Navigate to={defaultRoute!} replace />;
   }
 
   return <Outlet />;

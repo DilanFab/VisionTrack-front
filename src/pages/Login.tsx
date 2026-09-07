@@ -9,7 +9,7 @@ import { getDefaultRouteForRoles } from "../lib/roleCapabilities";
 
 
 const Login: React.FC = () => {
-  const { login, isAuthenticated, user } = useAuth();
+  const { login, isAuthenticated, user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -25,9 +25,14 @@ const Login: React.FC = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user && status === "idle") {
-navigate(getDefaultRouteForRoles(user.roles), { replace: true });
+      const targetRoute = getDefaultRouteForRoles(user.roles);
+      if (targetRoute && targetRoute !== "/login") {
+        navigate(targetRoute, { replace: true });
+      } else {
+        logout();
+      }
     }
-  }, [isAuthenticated, user, status, navigate]);
+  }, [isAuthenticated, user, status, navigate, logout]);
 
   // Efecto sutil de profundidad para reforzar foco sin bloquear la tarea principal
   useEffect(() => {

@@ -27,6 +27,14 @@ import PatientAppointments from "./pages/portal/PatientAppointments";
 import PatientScheduleAppointment from "./pages/portal/PatientScheduleAppointment";
 import PatientHistory from "./pages/portal/PatientHistory";
 import PatientProfile from "./pages/portal/PatientProfile";
+import CategoriasPage from "./pages/inventario/CategoriasPage";
+import ProductosPage from "./pages/inventario/ProductosPage";
+import MovimientosPage from "./pages/inventario/MovimientosPage";
+import Facturacion from "./pages/ventas/Facturacion";
+import ConfiguracionIva from "./pages/admin/ConfiguracionIva";
+import CajaPage from "./pages/ventas/CajaPage";
+import ComprasReportesPage from "./pages/ventas/ComprasReportesPage";
+
 
 function App() {
   return (
@@ -69,6 +77,7 @@ function App() {
                 <Route path="medicos/especialidades" element={<EspecialidadesMedicas />} />
                 <Route path="medicos/doctores" element={<Doctores />} />
                 <Route path="citas/estados" element={<EstadoCitas />} />
+                <Route path="configuracion-iva" element={<ConfiguracionIva />} />
               </Route>
               
               {/* Historias y supervisión clínica para Administrador y Doctor/Optómetra */}
@@ -89,8 +98,12 @@ function App() {
               {/* Recepción y operación administrativa de citas */}
               <Route element={<ProtectedRoute allowedRoles={["Administrador", "Recepcionista"]} />}>
                 <Route path="usuarios/pacientes" element={<Pacientes />} />
-                <Route path="inventario" element={<Generos />} />
-                <Route path="facturacion" element={<Generos />} />
+                <Route path="inventario/categorias" element={<CategoriasPage />} />
+                <Route path="inventario/productos" element={<ProductosPage />} />
+                <Route path="inventario/movimientos" element={<MovimientosPage />} />
+                <Route path="facturacion" element={<Facturacion />} />
+                <Route path="caja" element={<CajaPage />} />
+                <Route path="compras-reportes" element={<ComprasReportesPage />} />
               </Route>
             </Route>
           </Route>
