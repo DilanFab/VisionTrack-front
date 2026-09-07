@@ -42,6 +42,8 @@ export default function CategoriasPage() {
   };
 
   useEffect(() => {
+    // La carga inicial sincroniza estado con la API al montar el componente.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     cargarCategorias();
   }, []);
 

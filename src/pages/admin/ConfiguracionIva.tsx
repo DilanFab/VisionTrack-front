@@ -43,6 +43,8 @@ export default function ConfiguracionIva() {
   };
 
   useEffect(() => {
+    // La carga inicial sincroniza estado con la API al montar el componente.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     cargarDatos();
   }, []);
 
@@ -110,15 +112,16 @@ export default function ConfiguracionIva() {
       }
       setShowModal(false);
       await cargarDatos();
-    } catch (err: any) {
-      mostrarError(err?.response?.data?.message ?? "Error al guardar la configuración de IVA.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error al guardar la configuración de IVA.";
+      mostrarError(message);
     } finally {
       setSaving(false);
     }
   };
 
   const columns = [
-    { data: "iva_porcentaje", title: "Porcentaje (%)", render: (data: any) => `${Number(data)}%` },
+    { data: "iva_porcentaje", title: "Porcentaje (%)", render: (data: unknown) => `${Number(data)}%` },
     { data: "iva_descripcion", title: "Descripción" },
     { data: null, title: "Activo", orderable: false },
     { data: null, title: "Estado (Borrado)", orderable: false },

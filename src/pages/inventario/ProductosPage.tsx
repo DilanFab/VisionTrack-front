@@ -61,6 +61,8 @@ export default function ProductosPage() {
   };
 
   useEffect(() => {
+    // La carga inicial sincroniza estado con la API al montar el componente.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     cargarDatos();
   }, []);
 
@@ -137,10 +139,10 @@ export default function ProductosPage() {
     { data: "producto_codigo", title: "Código" },
     { data: "producto_nombre", title: "Nombre" },
     { data: "categoria.categoria_producto_nombre", title: "Categoría", defaultContent: "N/A" },
-    { 
-      data: null, 
-      title: "IVA", 
-      render: (_data: any, _type: any, row: Producto) => row.configuracion_iva ? `${row.configuracion_iva.iva_porcentaje}%` : "No asignado" 
+    {
+      data: null,
+      title: "IVA",
+      render: (_data: unknown, _type: unknown, row: Producto) => row.configuracion_iva ? `${row.configuracion_iva.iva_porcentaje}%` : "No asignado"
     },
     { data: "producto_stock_actual", title: "Stock" },
     { data: null, title: "Estado", orderable: false },
@@ -248,7 +250,7 @@ export default function ProductosPage() {
                     </Form.Group>
                 </Col>
             </Row>
-            
+
             <Row>
                 <Col md={6}>
                     <Form.Group className="mb-3">

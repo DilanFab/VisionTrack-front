@@ -49,6 +49,8 @@ export default function MovimientosPage() {
   };
 
   useEffect(() => {
+    // La carga inicial sincroniza estado con la API al montar el componente.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     cargarDatos();
   }, []);
 
@@ -87,8 +89,9 @@ export default function MovimientosPage() {
       mostrarExito("Movimiento registrado correctamente.");
       setShowModal(false);
       await cargarDatos();
-    } catch (e: any) {
-      mostrarError(e.response?.data?.message || "No se pudo registrar el movimiento.");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "No se pudo registrar el movimiento.";
+      mostrarError(message);
     } finally {
       setSaving(false);
     }

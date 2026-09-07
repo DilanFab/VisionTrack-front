@@ -14,7 +14,8 @@ import type {
   Factura,
   DetalleInput,
   MetodoPago,
-  ConfiguracionIva
+  ConfiguracionIva,
+  TarifaIva,
 } from "../../types/facturacion";
 import { getPacientesCompletos } from "../../api/citas/pacienteCompletoService";
 import { mostrarExito, mostrarError } from "../../lib/alerts";
@@ -68,7 +69,17 @@ export default function Facturacion() {
   // ─── Clientes (pacientes registrados) para búsqueda y autocomplete ──────
   const [clientes, setClientes] = useState<Persona[]>([]);
 
-  const [_key, setKey] = useState(0); // para reset de carrito
+  const cargarHistorial = useCallback(async () => {
+    setCargandoHistorial(true);
+    try {
+      const data = await getFacturas();
+      setHistorial(data.slice(0, 15)); // últimas 15
+    } catch {
+      // El historial no debe impedir el uso del punto de venta.
+    } finally {
+      setCargandoHistorial(false);
+    }
+  }, []);
 
   // Cargar productos, clientes e historial al montar
   useEffect(() => {
@@ -77,7 +88,9 @@ export default function Facturacion() {
       setConfiguracionesIva(ivas);
       if (ivas.length > 0) setTarifaSel(Number(ivas[0].iva_porcentaje));
     }).catch(() => {});
-    cargarHistorial();
+    // La carga inicial sincroniza estado con la API al montar el componente.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void cargarHistorial();
     getPacientesCompletos()
       .then((pacientes) =>
         setClientes(
@@ -87,19 +100,7 @@ export default function Facturacion() {
         )
       )
       .catch(() => console.error("No se pudo cargar la lista de clientes"));
-  }, []);
-
-  const cargarHistorial = async () => {
-    setCargandoHistorial(true);
-    try {
-      const data = await getFacturas();
-      setHistorial(data.slice(0, 15)); // últimas 15
-    } catch {
-      // silencioso
-    } finally {
-      setCargandoHistorial(false);
-    }
-  };
+  }, [cargarHistorial]);
 
   // ─── Buscar cliente (por cédula o nombre, insensible a acentos) ──────────
   const buscarCliente = () => {
@@ -185,7 +186,7 @@ export default function Facturacion() {
           detalle_concepto: prod.producto_nombre,
           detalle_cantidad: cantidad,
           detalle_precio_unit: Number(prod.producto_precio_unitario),
-          detalle_tarifa_iva: tarifaAplicable as any,
+          detalle_tarifa_iva: tarifaAplicable as TarifaIva,
         },
       ]);
     } else {
@@ -198,7 +199,7 @@ export default function Facturacion() {
           detalle_concepto: conceptoLibre.trim(),
           detalle_cantidad: cantidad,
           detalle_precio_unit: precioUnit,
-          detalle_tarifa_iva: tarifaSel as any,
+          detalle_tarifa_iva: tarifaSel as TarifaIva,
         },
       ]);
     }
@@ -224,7 +225,11 @@ export default function Facturacion() {
         cliente_id: cliente.persona_id,
         metodo_pago: metodo,
         factura_notas: notas || undefined,
-        detalles: carrito.map(({ _key: _, ...rest }) => rest),
+        detalles: carrito.map((item) => {
+          const detalle = { ...item } as DetalleInput & { _key?: number };
+          delete detalle._key;
+          return detalle;
+        }),
       };
       const nuevaFactura = await createFactura(payload);
       mostrarExito(`✅ Factura ${nuevaFactura.factura_numero} emitida correctamente`);
@@ -233,10 +238,10 @@ export default function Facturacion() {
       setCliente(null);
       setBusquedaCedula("");
       setNotas("");
-      setKey((k) => k + 1);
-      cargarHistorial();
-    } catch (err: any) {
-      mostrarError(err?.response?.data?.message ?? "Error al emitir factura");
+      void cargarHistorial();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error al emitir factura";
+      mostrarError(message);
     } finally {
       setEmitiendo(false);
     }
@@ -249,8 +254,9 @@ export default function Facturacion() {
       await anularFactura(f.factura_id);
       mostrarExito("Factura anulada y stock revertido");
       cargarHistorial();
-    } catch (err: any) {
-      mostrarError(err?.response?.data?.message ?? "Error al anular");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error al anular";
+      mostrarError(message);
     }
   };
 
