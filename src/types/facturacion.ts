@@ -45,6 +45,8 @@ export interface Factura {
   factura_creada: string;
   cliente?: ClienteFactura;
   detalles?: DetalleFactura[];
+  abonos?: { abono_id: number; monto: number | string; metodo_pago: string }[];
+  notas_credito?: { nota_credito_id: number; monto: number | string; motivo: string }[];
 }
 
 // Payload para crear factura

@@ -19,6 +19,7 @@ import type {
 } from "../../types/facturacion";
 import { getPacientesCompletos } from "../../api/citas/pacienteCompletoService";
 import { mostrarExito, mostrarError } from "../../lib/alerts";
+import { createAbono, createNotaCredito } from "../../api/comprasService";
 import type { Persona } from "../../types/usuarios/Persona";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -258,6 +259,21 @@ export default function Facturacion() {
       const message = err instanceof Error ? err.message : "Error al anular";
       mostrarError(message);
     }
+  };
+
+  const registrarAbono = async (f: Factura) => {
+    const monto = Number(window.prompt("Monto del abono:"));
+    if (!Number.isFinite(monto) || monto <= 0) return;
+    try { await createAbono(f.factura_id, { monto, metodo_pago: window.prompt("Método de pago:", "Efectivo") || "Efectivo" }); mostrarExito("Abono registrado."); await cargarHistorial(); }
+    catch { mostrarError("No se pudo registrar el abono."); }
+  };
+
+  const registrarNotaCredito = async (f: Factura) => {
+    const monto = Number(window.prompt("Monto de la nota de crédito:"));
+    const motivo = window.prompt("Motivo:");
+    if (!Number.isFinite(monto) || monto <= 0 || !motivo?.trim()) return;
+    try { await createNotaCredito(f.factura_id, { monto, motivo }); mostrarExito("Nota de crédito registrada."); await cargarHistorial(); }
+    catch { mostrarError("No se pudo registrar la nota de crédito."); }
   };
 
   // ─── Seleccionar producto en modal cambia precio automático ─────────────
@@ -737,9 +753,11 @@ export default function Facturacion() {
         </Modal.Body>
         <Modal.Footer>
           {canEmit && facturaDetalle?.factura_estado === "A" && (
-            <Button variant="danger" onClick={() => { handleAnular(facturaDetalle!); setFacturaDetalle(null); }}>
-              Anular Factura
-            </Button>
+            <>
+              <Button variant="outline-primary" onClick={() => registrarAbono(facturaDetalle!)}>Registrar abono</Button>
+              <Button variant="outline-warning" onClick={() => registrarNotaCredito(facturaDetalle!)}>Nota de crédito</Button>
+              <Button variant="danger" onClick={() => { handleAnular(facturaDetalle!); setFacturaDetalle(null); }}>Anular Factura</Button>
+            </>
           )}
           <Button variant="secondary" onClick={() => setFacturaDetalle(null)}>Cerrar</Button>
         </Modal.Footer>
