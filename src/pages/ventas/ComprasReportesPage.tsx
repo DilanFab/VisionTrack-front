@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, Col, Form, Row, Tab, Table, Tabs } from "react-bootstrap";
 import {
   createCompra,
