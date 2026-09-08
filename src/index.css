@@ -493,10 +493,38 @@ button:disabled, .btn:disabled, input:disabled, select:disabled, textarea:disabl
   border-radius: 1.25rem !important;
 }
 
-.swal2-title {
-  color: var(--on-surface) !important;
-}
-
 .swal2-html-container {
   color: var(--on-surface-variant) !important;
+}
+
+/* Reglas de impresión para Recetas y Certificados */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #area-impresion-clinica,
+  #area-impresion-clinica * {
+    visibility: visible;
+  }
+  #area-impresion-clinica {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    color: black !important;
+  }
+  .print\:hidden,
+  .modal-backdrop,
+  header,
+  nav,
+  aside,
+  footer {
+    display: none !important;
+  }
 }

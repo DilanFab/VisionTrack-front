@@ -16,6 +16,7 @@ import { formatFechaClinica, formatHoraClinica } from "../historias/historiaUtil
 import EyeViewer3D from "../../components/examenes/EyeViewer3D";
 import TopographyMap from "../../components/examenes/TopographyMap";
 import VisualSimulation from "../../components/examenes/VisualSimulation";
+import { ImprimirDocumentoModal } from "../../components/examenes/ImprimirDocumentoModal";
 import { SymbolIcon } from "../../components/SymbolIcon";
 
 // Safe JSON extraction helper
@@ -70,6 +71,7 @@ export default function ExamenOptometricoDetalle() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   useEffect(() => {
     const cargar = async () => {
@@ -304,6 +306,19 @@ export default function ExamenOptometricoDetalle() {
               Inactivar
             </button>
           )}
+
+          {/* Botón de Impresión de Receta / Certificado */}
+          <button
+            type="button"
+            onClick={() => setShowPrintModal(true)}
+            className={`font-bold rounded-xl px-4 py-2 text-xs transition-all flex items-center gap-1.5 ${
+              isDark
+                ? "bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 shadow-sm"
+                : "bg-white hover:bg-slate-50 text-cyan-800 border border-cyan-300 shadow-sm"
+            }`}
+          >
+            <SymbolIcon name="print" className="text-sm" /> Imprimir Receta / Certificado
+          </button>
         </div>
       </header>
 
@@ -656,6 +671,14 @@ export default function ExamenOptometricoDetalle() {
           />
         </div>
       </div>
+
+      {showPrintModal && (
+        <ImprimirDocumentoModal
+          show={showPrintModal}
+          onHide={() => setShowPrintModal(false)}
+          examen={examen}
+        />
+      )}
     </div>
   );
 }
