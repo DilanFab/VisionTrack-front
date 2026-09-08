@@ -11,7 +11,7 @@ import { useAuth } from "../../context/useAuth";
 import { useTheme } from "../../context/useTheme";
 import { canEditDraftExam, canOperateExams, canReadClinicalSupervision } from "../../lib/roleCapabilities";
 import { getApiErrorMessage } from "../../lib/apiError";
-import { confirmarEliminacion, mostrarError, mostrarExito } from "../../lib/alerts";
+import { confirmarAccion, mostrarError, mostrarExito } from "../../lib/alerts";
 import { formatFechaClinica, formatHoraClinica } from "../historias/historiaUtils";
 import EyeViewer3D from "../../components/examenes/EyeViewer3D";
 import TopographyMap from "../../components/examenes/TopographyMap";
@@ -91,7 +91,14 @@ export default function ExamenOptometricoDetalle() {
 
   const finalizar = async () => {
     if (!examen || !canOperateExams(user?.roles)) return;
-    const confirmado = await confirmarEliminacion("El examen quedará finalizado y pasará a solo lectura.");
+    const confirmado = await confirmarAccion({
+      titulo: "¿Finalizar examen optométrico?",
+      texto: "El examen quedará registrado formalmente y pasará a modo de solo lectura.",
+      confirmButtonText: "Sí, finalizar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#059669",
+      icon: "question",
+    });
     if (!confirmado) return;
     try {
       setActionLoading(true);
@@ -106,7 +113,14 @@ export default function ExamenOptometricoDetalle() {
 
   const inactivar = async () => {
     if (!examen || !canOperateExams(user?.roles)) return;
-    const confirmado = await confirmarEliminacion("El examen será marcado como inactivo.");
+    const confirmado = await confirmarAccion({
+      titulo: "¿Inactivar examen optométrico?",
+      texto: "El examen será marcado como inactivo y no se mostrará en los registros activos.",
+      confirmButtonText: "Sí, inactivar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#ba1a1a",
+      icon: "warning",
+    });
     if (!confirmado) return;
     try {
       setActionLoading(true);

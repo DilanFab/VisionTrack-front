@@ -499,32 +499,84 @@ button:disabled, .btn:disabled, input:disabled, select:disabled, textarea:disabl
 
 /* Reglas de impresión para Recetas y Certificados */
 @media print {
-  body * {
-    visibility: hidden;
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 10mm 12mm;
   }
-  #area-impresion-clinica,
-  #area-impresion-clinica * {
-    visibility: visible;
+
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
+
+  /* Ocultar aplicación principal cuando el modal clínico está abierto */
+  body.modal-open #root,
+  body.modal-open .modal-backdrop,
+  body.modal-open .modal-header,
+  body.modal-open .modal-footer,
+  .print-hidden,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  body.modal-open {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.modal-open .modal {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    background: transparent !important;
+  }
+
+  body.modal-open .modal-dialog {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  body.modal-open .modal-content {
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.modal-open .modal-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+  }
+
+  /* Ocultar barra superior / lateral cuando se imprime sin modal */
+  body:not(.modal-open) header,
+  body:not(.modal-open) nav,
+  body:not(.modal-open) aside {
+    display: none !important;
+  }
+
   #area-impresion-clinica {
-    position: absolute;
-    left: 0;
-    top: 0;
+    display: block !important;
+    position: static !important;
     width: 100% !important;
     max-width: 100% !important;
-    margin: 0 !important;
-    padding: 20px !important;
-    box-shadow: none !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
     border: none !important;
-    background: white !important;
-    color: black !important;
-  }
-  .print\:hidden,
-  .modal-backdrop,
-  header,
-  nav,
-  aside,
-  footer {
-    display: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }
