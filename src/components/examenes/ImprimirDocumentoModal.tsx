@@ -25,6 +25,26 @@ const getVal = (obj: unknown, path: string, fallback = "-"): string => {
   return cur !== undefined && cur !== null && String(cur).trim() !== "" ? String(cur) : fallback;
 };
 
+const CURRENT_DATE_OBJ = new Date();
+const CURRENT_YEAR = CURRENT_DATE_OBJ.getFullYear();
+const CURRENT_MONTH = CURRENT_DATE_OBJ.getMonth();
+const CURRENT_DATE = CURRENT_DATE_OBJ.getDate();
+
+const calcularEdad = (fechaNacStr: string | null | undefined): string | number => {
+  if (!fechaNacStr) return "N/D";
+  try {
+    const birth = new Date(fechaNacStr);
+    let age = CURRENT_YEAR - birth.getFullYear();
+    const monthDiff = CURRENT_MONTH - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && CURRENT_DATE < birth.getDate())) {
+      age--;
+    }
+    return age < 0 ? 0 : age;
+  } catch {
+    return "N/D";
+  }
+};
+
 export const ImprimirDocumentoModal: React.FC<ImprimirDocumentoModalProps> = ({
   show,
   onHide,
@@ -46,56 +66,181 @@ export const ImprimirDocumentoModal: React.FC<ImprimirDocumentoModalProps> = ({
 
   const cedulaPaciente = persona?.persona_cedula || "N/A";
   const numHistoria = examen.historia_clinica?.historia_clinica_numero || `HC-${examen.historia_clinica_id}`;
+  const edadPaciente = calcularEdad(persona?.persona_fecha_nacimiento);
   const nombreDoctor =
     examen.examen_nombre_examinador ||
     examen.examinador?.usuario_nombre ||
     "Dr. Optómetra Tratante";
 
-  // Valores de refracción final (o refracción manual como respaldo)
-  const odEsf = getVal(examen.lensometria, "rxFinal.od.esf", getVal(examen.refraccion, "manual.od.esf", "0.00"));
-  const odCyl = getVal(examen.lensometria, "rxFinal.od.cyl", getVal(examen.refraccion, "manual.od.cyl", "0.00"));
-  const odEje = getVal(examen.lensometria, "rxFinal.od.eje", getVal(examen.refraccion, "manual.od.eje", "0°"));
-  const odAdd = getVal(examen.lensometria, "rxFinal.od.add", getVal(examen.refraccion, "manual.od.add", "-"));
-  const odAvl = getVal(examen.lensometria, "rxFinal.od.avl", getVal(examen.refraccion, "manual.od.va", "20/20"));
+  // Valores de refracción final o manual
+  const odEsf = getVal(
+    examen.lensometria,
+    "rxFinal.od.esf",
+    getVal(examen.refraccion, "manual.od.esf", getVal(examen.refraccion, "computarizada.od.esf", "0.00"))
+  );
+  const odCyl = getVal(
+    examen.lensometria,
+    "rxFinal.od.cyl",
+    getVal(examen.refraccion, "manual.od.cyl", getVal(examen.refraccion, "computarizada.od.cyl", "0.00"))
+  );
+  const odEje = getVal(
+    examen.lensometria,
+    "rxFinal.od.eje",
+    getVal(examen.refraccion, "manual.od.eje", getVal(examen.refraccion, "computarizada.od.eje", "0°"))
+  );
+  const odAdd = getVal(
+    examen.lensometria,
+    "rxFinal.od.add",
+    getVal(examen.refraccion, "manual.od.add", "-")
+  );
+  const odAvl = getVal(
+    examen.lensometria,
+    "rxFinal.od.avl",
+    getVal(examen.refraccion, "manual.od.va", "20/20")
+  );
   const odAvp = getVal(examen.lensometria, "rxFinal.od.avp", "0.50M");
 
-  const oiEsf = getVal(examen.lensometria, "rxFinal.oi.esf", getVal(examen.refraccion, "manual.oi.esf", "0.00"));
-  const oiCyl = getVal(examen.lensometria, "rxFinal.oi.cyl", getVal(examen.refraccion, "manual.oi.cyl", "0.00"));
-  const oiEje = getVal(examen.lensometria, "rxFinal.oi.eje", getVal(examen.refraccion, "manual.oi.eje", "0°"));
-  const oiAdd = getVal(examen.lensometria, "rxFinal.oi.add", getVal(examen.refraccion, "manual.oi.add", "-"));
-  const oiAvl = getVal(examen.lensometria, "rxFinal.oi.avl", getVal(examen.refraccion, "manual.oi.va", "20/20"));
+  const oiEsf = getVal(
+    examen.lensometria,
+    "rxFinal.oi.esf",
+    getVal(examen.refraccion, "manual.oi.esf", getVal(examen.refraccion, "computarizada.oi.esf", "0.00"))
+  );
+  const oiCyl = getVal(
+    examen.lensometria,
+    "rxFinal.oi.cyl",
+    getVal(examen.refraccion, "manual.oi.cyl", getVal(examen.refraccion, "computarizada.oi.cyl", "0.00"))
+  );
+  const oiEje = getVal(
+    examen.lensometria,
+    "rxFinal.oi.eje",
+    getVal(examen.refraccion, "manual.oi.eje", getVal(examen.refraccion, "computarizada.oi.eje", "0°"))
+  );
+  const oiAdd = getVal(
+    examen.lensometria,
+    "rxFinal.oi.add",
+    getVal(examen.refraccion, "manual.oi.add", "-")
+  );
+  const oiAvl = getVal(
+    examen.lensometria,
+    "rxFinal.oi.avl",
+    getVal(examen.refraccion, "manual.oi.va", "20/20")
+  );
   const oiAvp = getVal(examen.lensometria, "rxFinal.oi.avp", "0.50M");
 
-  const dnp = getVal(examen.lensometria, "rxFinal.dnp", getVal(examen.refraccion, "computarizada.dp", "62 mm"));
+  const dnp = getVal(
+    examen.lensometria,
+    "rxFinal.dnp",
+    getVal(examen.refraccion, "computarizada.dp", "62 mm")
+  );
 
   // Agudeza visual sin corrección
   const avSinOD = getVal(examen.agudeza_visual, "od.vl_sc", "20/40");
   const avSinOI = getVal(examen.agudeza_visual, "oi.vl_sc", "20/40");
 
   const handlePrint = () => {
-    window.print();
+    const printableElement = document.getElementById("area-impresion-clinica");
+    if (!printableElement) {
+      window.print();
+      return;
+    }
+
+    // Crear iframe invisible para aislar la impresión y asegurar exactamente 1 página sin residuos del DOM
+    const iframe = document.createElement("iframe");
+    iframe.setAttribute(
+      "style",
+      "position: fixed; width: 0; height: 0; border: 0; left: -9999px; top: -9999px;"
+    );
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentWindow?.document;
+    if (!iframeDoc) {
+      window.print();
+      return;
+    }
+
+    const htmlContent = printableElement.outerHTML;
+
+    iframeDoc.open();
+    iframeDoc.write(`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>${tipoDoc === "receta" ? "Receta_Oftalmologica" : "Certificado_Salud_Visual"}_${cedulaPaciente}</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 8mm 10mm 8mm 10mm;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      color: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.35;
+    }
+    .clinica-receta-page {
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+  </style>
+</head>
+<body>
+  ${htmlContent}
+</body>
+</html>`);
+    iframeDoc.close();
+
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } finally {
+        setTimeout(() => {
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        }, 1500);
+      }
+    }, 200);
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="lg" centered dialogClassName="modal-documento-impresion">
+    <Modal
+      show={show}
+      onHide={onHide}
+      size="lg"
+      centered
+      dialogClassName="modal-documento-impresion"
+    >
       <Modal.Header closeButton className="border-b bg-slate-900 text-white print:hidden">
         <Modal.Title className="text-base font-bold flex items-center gap-2">
           <SymbolIcon name="print" />
-          Impresión de Receta y Certificado Visual
+          Emisión e Impresión de Documentos Clínicos
         </Modal.Title>
       </Modal.Header>
 
       <Modal.Body className="p-0 bg-slate-100 dark:bg-slate-950">
-        {/* Selector de tipo de documento (Oculto en impresión) */}
-        <div className="p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between print:hidden">
+        {/* Selector de Tipo de Documento y Botón Imprimir */}
+        <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 print:hidden">
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setTipoDoc("receta")}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 tipoDoc === "receta"
-                  ? "bg-primary text-white shadow-sm"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                  ? "bg-cyan-700 text-white shadow-sm"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
             >
               <SymbolIcon name="prescriptions" />
@@ -106,8 +251,8 @@ export const ImprimirDocumentoModal: React.FC<ImprimirDocumentoModalProps> = ({
               onClick={() => setTipoDoc("certificado")}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 tipoDoc === "certificado"
-                  ? "bg-primary text-white shadow-sm"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                  ? "bg-cyan-700 text-white shadow-sm"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
             >
               <SymbolIcon name="verified" />
@@ -125,238 +270,553 @@ export const ImprimirDocumentoModal: React.FC<ImprimirDocumentoModalProps> = ({
           </button>
         </div>
 
-        {/* Contenedor Imprimible (Diseño A4 limpio y profesional) */}
-        <div className="p-6 md:p-10 flex justify-center">
+        {/* Vista Previa del Documento (Diseño exacto A4, 1 página) */}
+        <div className="p-4 sm:p-8 flex justify-center overflow-auto max-h-[80vh]">
           <div
             id="area-impresion-clinica"
-            className="w-full max-w-[800px] bg-white text-slate-900 p-8 sm:p-12 shadow-2xl rounded-2xl border border-slate-300 print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-none"
-            style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
+            className="clinica-receta-page"
+            style={{
+              width: "100%",
+              maxWidth: "760px",
+              backgroundColor: "#ffffff",
+              color: "#0f172a",
+              padding: "24px 28px",
+              margin: "0 auto",
+              borderRadius: "12px",
+              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+              border: "1px solid #e2e8f0",
+              fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              lineHeight: 1.35,
+            }}
           >
-            {/* MEMBRETE CLÍNICO */}
-            <header className="border-b-2 border-slate-900 pb-5 mb-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-black tracking-tight text-cyan-700">VISIONTRACK</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-cyan-100 text-cyan-900 uppercase tracking-wider">
-                      Centro Oftálmico
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 font-medium mt-1">
-                    Centro Especializado de Salud Visual, Optometría y Diagnóstico Ocular
-                  </p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    RUC: 1792345678001 · Permiso MS: 2026-VT-089
-                  </p>
-                </div>
-                <div className="text-right text-[11px] text-slate-600 space-y-0.5">
-                  <p className="font-bold text-slate-800">Sede Central - Consultorio Oftálmico</p>
-                  <p>Av. República del Salvador y NNUU</p>
-                  <p>Telf: (02) 234-5678 · Cel: 099 876 5432</p>
-                  <p>atencion@visiontrack.med.ec</p>
-                </div>
-              </div>
-            </header>
-
-            {/* DATOS DEL PACIENTE */}
-            <section className="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-6 text-xs">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Paciente</span>
-                  <span className="font-bold text-slate-800 text-sm">{nombrePaciente}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Cédula / ID</span>
-                  <span className="font-bold text-slate-800">{cedulaPaciente}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Historia Clínica</span>
-                  <span className="font-bold text-cyan-800">{numHistoria}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Fecha de Examen</span>
-                  <span className="font-bold text-slate-800">
-                    {formatFechaClinica(examen.examen_fecha)} {formatHoraClinica(examen.examen_hora)}
+            {/* 1. ENCABEZADO / MEMBRETE CLÍNICO */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                paddingBottom: "10px",
+                borderBottom: "2.5px solid #0891b2",
+                marginBottom: "12px",
+              }}
+            >
+              <div style={{ textAlign: "left" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <svg
+                    style={{ width: "28px", height: "28px" }}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#0891b2"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                    <circle cx="12" cy="12" r="3.2" />
+                  </svg>
+                  <span
+                    style={{
+                      fontSize: "22px",
+                      fontWeight: 900,
+                      letterSpacing: "-0.5px",
+                      color: "#0891b2",
+                    }}
+                  >
+                    VISIONTRACK
                   </span>
                 </div>
+                <div
+                  style={{
+                    fontSize: "9px",
+                    fontWeight: 800,
+                    letterSpacing: "1.2px",
+                    color: "#0f172a",
+                    textTransform: "uppercase",
+                    marginTop: "2px",
+                  }}
+                >
+                  Centro Oftalmológico & Salud Visual
+                </div>
+                <div style={{ fontSize: "8.5px", color: "#64748b", marginTop: "1px" }}>
+                  R.U.C.: 1792345678001 · Licencia MSP / ACESS: No. 2026-VT-089
+                </div>
               </div>
-            </section>
 
-            {/* CONTENIDO 1: RECETA OFTÁLMICA */}
-            {tipoDoc === "receta" && (
-              <div className="space-y-6">
-                <div className="text-center pb-2">
-                  <h3 className="text-base font-black tracking-wider uppercase text-slate-900 border-b pb-1 inline-block">
-                    RECETA OFTALMOLÓGICA / PRESCRIPCIÓN ÓPTICA
-                  </h3>
+              <div
+                style={{
+                  textAlign: "right",
+                  fontSize: "8.5px",
+                  color: "#475569",
+                  lineHeight: "1.35",
+                }}
+              >
+                <div style={{ fontWeight: 800, color: "#0f172a" }}>Consultorio Principal</div>
+                <div>Av. República del Salvador N34-123 y NNUU, Piso 4</div>
+                <div>Telf: (02) 234-5678 · Cel: 099 876 5432</div>
+                <div style={{ color: "#0891b2", fontWeight: 600 }}>Quito - Ecuador · citas@visiontrack.med.ec</div>
+              </div>
+            </div>
+
+            {/* 2. TARJETA DE DATOS DEL PACIENTE */}
+            <div
+              style={{
+                backgroundColor: "#f8fafc",
+                border: "1px solid #cbd5e1",
+                borderRadius: "8px",
+                padding: "8px 12px",
+                marginBottom: "12px",
+              }}
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "2fr 1fr 1fr",
+                  gap: "6px 12px",
+                  fontSize: "11px",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: "8.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>
+                    PACIENTE
+                  </div>
+                  <div style={{ fontWeight: 800, color: "#0f172a", fontSize: "13px" }}>
+                    {nombrePaciente}
+                  </div>
                 </div>
 
-                {/* TABLA DE GRADUACIÓN / REFRACTIVA */}
-                <div className="border border-slate-900 rounded-lg overflow-hidden">
-                  <table className="w-full text-xs text-center border-collapse">
-                    <thead className="bg-slate-900 text-white font-bold">
-                      <tr>
-                        <th className="py-2.5 px-3 text-left">OJO</th>
-                        <th className="py-2.5 px-2">ESFERA</th>
-                        <th className="py-2.5 px-2">CILINDRO</th>
-                        <th className="py-2.5 px-2">EJE</th>
-                        <th className="py-2.5 px-2">ADICIÓN</th>
-                        <th className="py-2.5 px-2">AV LEJOS</th>
-                        <th className="py-2.5 px-2">AV CERCA</th>
+                <div>
+                  <div style={{ fontSize: "8.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>
+                    CÉDULA / DNI
+                  </div>
+                  <div style={{ fontWeight: 700, color: "#0f172a" }}>
+                    {cedulaPaciente}
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: "8.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>
+                    HISTORIA CLÍNICA
+                  </div>
+                  <div style={{ fontWeight: 800, color: "#0891b2" }}>
+                    {numHistoria}
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: "8.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>
+                    OPTÓMETRA TRATANTE
+                  </div>
+                  <div style={{ fontWeight: 600, color: "#334155" }}>
+                    {nombreDoctor}
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: "8.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>
+                    EDAD
+                  </div>
+                  <div style={{ fontWeight: 700, color: "#0f172a" }}>
+                    {edadPaciente} años
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: "8.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>
+                    FECHA DE EXAMEN
+                  </div>
+                  <div style={{ fontWeight: 700, color: "#0f172a" }}>
+                    {formatFechaClinica(examen.examen_fecha)} {formatHoraClinica(examen.examen_hora)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. CONTENIDO: RECETA OFTALMOLÓGICA */}
+            {tipoDoc === "receta" && (
+              <div>
+                <div style={{ textAlign: "center", margin: "8px 0 10px 0" }}>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      fontSize: "12.5px",
+                      fontWeight: 800,
+                      letterSpacing: "1.2px",
+                      textTransform: "uppercase",
+                      color: "#0f172a",
+                      borderBottom: "2px solid #0891b2",
+                      paddingBottom: "3px",
+                    }}
+                  >
+                    RECETA OFTALMOLÓGICA / PRESCRIPCIÓN ÓPTICA
+                  </span>
+                </div>
+
+                {/* Tabla de Graduación */}
+                <div
+                  style={{
+                    border: "1.5px solid #0f172a",
+                    borderRadius: "6px",
+                    overflow: "hidden",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "center", fontSize: "11px" }}>
+                    <thead>
+                      <tr style={{ backgroundColor: "#0f172a", color: "#ffffff" }}>
+                        <th style={{ padding: "6px 8px", textAlign: "left", paddingLeft: "12px", fontSize: "9.5px", fontWeight: 800, letterSpacing: "0.5px" }}>
+                          OJO
+                        </th>
+                        <th style={{ padding: "6px 6px", fontSize: "9.5px", fontWeight: 800, letterSpacing: "0.5px" }}>ESFERA</th>
+                        <th style={{ padding: "6px 6px", fontSize: "9.5px", fontWeight: 800, letterSpacing: "0.5px" }}>CILINDRO</th>
+                        <th style={{ padding: "6px 6px", fontSize: "9.5px", fontWeight: 800, letterSpacing: "0.5px" }}>EJE</th>
+                        <th style={{ padding: "6px 6px", fontSize: "9.5px", fontWeight: 800, letterSpacing: "0.5px" }}>ADICIÓN</th>
+                        <th style={{ padding: "6px 6px", fontSize: "9.5px", fontWeight: 800, letterSpacing: "0.5px" }}>AV LEJOS</th>
+                        <th style={{ padding: "6px 6px", fontSize: "9.5px", fontWeight: 800, letterSpacing: "0.5px" }}>AV CERCA</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-300 font-mono font-medium">
-                      <tr className="hover:bg-slate-50">
-                        <td className="py-3 px-3 text-left font-bold font-sans text-slate-900 bg-slate-100">
+                    <tbody>
+                      <tr style={{ borderTop: "1px solid #cbd5e1" }}>
+                        <td
+                          style={{
+                            padding: "8px 10px",
+                            textAlign: "left",
+                            fontWeight: 800,
+                            backgroundColor: "#f8fafc",
+                            color: "#0f172a",
+                            fontSize: "11px",
+                          }}
+                        >
                           O.D. (Derecho)
                         </td>
-                        <td className="py-3 px-2 font-bold text-slate-900">{odEsf}</td>
-                        <td className="py-3 px-2 font-bold text-slate-900">{odCyl}</td>
-                        <td className="py-3 px-2 font-bold text-slate-900">{odEje}</td>
-                        <td className="py-3 px-2 text-slate-700">{odAdd}</td>
-                        <td className="py-3 px-2 text-slate-700">{odAvl}</td>
-                        <td className="py-3 px-2 text-slate-700">{odAvp}</td>
+                        <td style={{ padding: "8px 6px", fontFamily: "monospace", fontWeight: 800, fontSize: "12px", color: "#0f172a" }}>
+                          {odEsf}
+                        </td>
+                        <td style={{ padding: "8px 6px", fontFamily: "monospace", fontWeight: 800, fontSize: "12px", color: "#0f172a" }}>
+                          {odCyl}
+                        </td>
+                        <td style={{ padding: "8px 6px", fontFamily: "monospace", fontWeight: 800, fontSize: "12px", color: "#0f172a" }}>
+                          {odEje}
+                        </td>
+                        <td style={{ padding: "8px 6px", fontFamily: "monospace", fontWeight: 700, fontSize: "12px", color: "#475569" }}>
+                          {odAdd}
+                        </td>
+                        <td style={{ padding: "8px 6px", fontFamily: "monospace", fontWeight: 700, fontSize: "12px", color: "#0891b2" }}>
+                          {odAvl}
+                        </td>
+                        <td style={{ padding: "8px 6px", fontFamily: "monospace", fontWeight: 700, fontSize: "12px", color: "#475569" }}>
+                          {odAvp}
+                        </td>
                       </tr>
-                      <tr className="hover:bg-slate-50">
-                        <td className="py-3 px-3 text-left font-bold font-sans text-slate-900 bg-slate-100">
+                      <tr style={{ borderTop: "1px solid #cbd5e1" }}>
+                        <td
+                          style={{
+                            padding: "8px 10px",
+                            textAlign: "left",
+                            fontWeight: 800,
+                            backgroundColor: "#f8fafc",
+                            color: "#0f172a",
+                            fontSize: "11px",
+                          }}
+                        >
                           O.I. (Izquierdo)
                         </td>
-                        <td className="py-3 px-2 font-bold text-slate-900">{oiEsf}</td>
-                        <td className="py-3 px-2 font-bold text-slate-900">{oiCyl}</td>
-                        <td className="py-3 px-2 font-bold text-slate-900">{oiEje}</td>
-                        <td className="py-3 px-2 text-slate-700">{oiAdd}</td>
-                        <td className="py-3 px-2 text-slate-700">{oiAvl}</td>
-                        <td className="py-3 px-2 text-slate-700">{oiAvp}</td>
+                        <td style={{ padding: "8px 6px", fontFamily: "monospace", fontWeight: 800, fontSize: "12px", color: "#0f172a" }}>
+                          {oiEsf}
+                        </td>
+                        <td style={{ padding: "8px 6px", fontFamily: "monospace", fontWeight: 800, fontSize: "12px", color: "#0f172a" }}>
+                          {oiCyl}
+                        </td>
+                        <td style={{ padding: "8px 6px", fontFamily: "monospace", fontWeight: 800, fontSize: "12px", color: "#0f172a" }}>
+                          {oiEje}
+                        </td>
+                        <td style={{ padding: "8px 6px", fontFamily: "monospace", fontWeight: 700, fontSize: "12px", color: "#475569" }}>
+                          {oiAdd}
+                        </td>
+                        <td style={{ padding: "8px 6px", fontFamily: "monospace", fontWeight: 700, fontSize: "12px", color: "#0891b2" }}>
+                          {oiAvl}
+                        </td>
+                        <td style={{ padding: "8px 6px", fontFamily: "monospace", fontWeight: 700, fontSize: "12px", color: "#475569" }}>
+                          {oiAvp}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
-                  <div className="bg-slate-100 p-2 text-right border-t border-slate-300 text-[11px] font-bold text-slate-700">
-                    Distancia Pupilar (DP/DNP): <span className="text-slate-900">{dnp}</span>
+                  <div
+                    style={{
+                      backgroundColor: "#f1f5f9",
+                      borderTop: "1px solid #cbd5e1",
+                      padding: "6px 12px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "10.5px",
+                      fontWeight: 600,
+                      color: "#334155",
+                    }}
+                  >
+                    <span>
+                      Distancia Pupilar (DP / DNP): <strong style={{ color: "#0f172a" }}>{dnp}</strong>
+                    </span>
+                    <span>
+                      Uso sugerido: <strong style={{ color: "#0f172a" }}>Permanente / Lectura</strong>
+                    </span>
                   </div>
                 </div>
 
-                {/* DIAGNÓSTICO Y TRATAMIENTO */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                  <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50">
-                    <span className="font-bold text-[10px] text-slate-500 uppercase tracking-wider block mb-1">
-                      Diagnóstico Refractivo / Clínico
-                    </span>
-                    <p className="font-medium text-slate-800">
-                      <strong>OD:</strong> {examen.diagnostico_od || "Miopía / Astigmatismo"}
-                    </p>
-                    <p className="font-medium text-slate-800 mt-0.5">
-                      <strong>OI:</strong> {examen.diagnostico_oi || "Miopía / Astigmatismo"}
-                    </p>
-                    {examen.cie10 && (
-                      <p className="text-[11px] text-cyan-800 font-bold mt-1">
-                        Código CIE-10: {examen.cie10}
+                {/* Bloques de Diagnóstico e Indicaciones */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
+                  <div
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "6px",
+                      padding: "8px 10px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "8.5px",
+                        fontWeight: 800,
+                        color: "#0891b2",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        marginBottom: "4px",
+                        borderBottom: "1px solid #e2e8f0",
+                        paddingBottom: "2px",
+                      }}
+                    >
+                      Diagnóstico Refractivo
+                    </div>
+                    <div style={{ fontSize: "10.5px", color: "#1e293b", lineHeight: "1.35" }}>
+                      <p style={{ margin: "0 0 2px 0" }}>
+                        <strong>OD:</strong> {examen.diagnostico_od || "Miopía y astigmatismo miópico"}
                       </p>
-                    )}
+                      <p style={{ margin: "0 0 2px 0" }}>
+                        <strong>OI:</strong> {examen.diagnostico_oi || "Miopía y astigmatismo miópico"}
+                      </p>
+                      {examen.cie10 && (
+                        <p style={{ margin: "2px 0 0 0", fontSize: "9.5px", color: "#0891b2", fontWeight: 700 }}>
+                          CIE-10: {examen.cie10}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50">
-                    <span className="font-bold text-[10px] text-slate-500 uppercase tracking-wider block mb-1">
-                      Tratamiento / Indicaciones Ópticas
-                    </span>
-                    <p className="text-slate-700 whitespace-pre-line leading-relaxed">
-                      {examen.tratamiento_conducta ||
-                        "Lentes de armazón para visión lejana con filtro antirreflejo y protección UV. Control visual anual."}
-                    </p>
+                  <div
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "6px",
+                      padding: "8px 10px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "8.5px",
+                        fontWeight: 800,
+                        color: "#0891b2",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        marginBottom: "4px",
+                        borderBottom: "1px solid #e2e8f0",
+                        paddingBottom: "2px",
+                      }}
+                    >
+                      Indicaciones / Tipo de Lente
+                    </div>
+                    <div style={{ fontSize: "10.5px", color: "#1e293b", lineHeight: "1.35" }}>
+                      <p style={{ margin: 0 }}>
+                        {examen.tratamiento_conducta ||
+                          "Lentes de armazón con tratamiento antirreflejo y filtro azul (Blue Block) con protección UV. Control visual en 12 meses."}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                {/* NOTA DE VIGENCIA */}
-                <div className="text-[10px] text-slate-500 text-center italic border-t pt-2">
-                  * Esta prescripción óptica tiene una validez recomendada de un (1) año a partir de la fecha de emisión.
+                <div
+                  style={{
+                    fontSize: "8.5px",
+                    color: "#64748b",
+                    textAlign: "center",
+                    fontStyle: "italic",
+                    marginTop: "6px",
+                  }}
+                >
+                  * Esta fórmula óptica tiene una validez recomendada de un (1) año calendario a partir de su emisión.
                 </div>
               </div>
             )}
 
-            {/* CONTENIDO 2: CERTIFICADO MÉDICO VISUAL */}
+            {/* 4. CONTENIDO: CERTIFICADO DE SALUD VISUAL */}
             {tipoDoc === "certificado" && (
-              <div className="space-y-6 text-xs leading-relaxed text-slate-800">
-                <div className="text-center pb-2">
-                  <h3 className="text-base font-black tracking-wider uppercase text-slate-900 border-b pb-1 inline-block">
-                    CERTIFICADO MÉDICO DE SALUD VISUAL
-                  </h3>
+              <div>
+                <div style={{ textAlign: "center", margin: "8px 0 10px 0" }}>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      fontSize: "12.5px",
+                      fontWeight: 800,
+                      letterSpacing: "1.2px",
+                      textTransform: "uppercase",
+                      color: "#0f172a",
+                      borderBottom: "2px solid #0891b2",
+                      paddingBottom: "3px",
+                    }}
+                  >
+                    CERTIFICADO DE SALUD VISUAL Y APTITUD OCULAR
+                  </span>
                 </div>
 
-                <div className="space-y-4 text-justify font-sans text-sm">
-                  <p>
-                    El suscrito profesional del Centro Oftálmico <strong>VISIONTRACK</strong>, en legal ejercicio de sus funciones,
+                <div style={{ fontSize: "11px", color: "#1e293b", lineHeight: "1.45" }}>
+                  <p style={{ margin: "0 0 8px 0" }}>
+                    El suscrito profesional especialista en Optometría y Salud Ocular del Centro Oftálmico{" "}
+                    <strong>VISIONTRACK</strong>, debidamente acreditado ante la autoridad sanitaria nacional:
                   </p>
 
-                  <p className="font-bold uppercase tracking-wide text-center text-sm my-3">
+                  <div
+                    style={{
+                      textAlign: "center",
+                      fontWeight: 900,
+                      letterSpacing: "2px",
+                      fontSize: "13px",
+                      color: "#0f172a",
+                      margin: "8px 0",
+                    }}
+                  >
                     CERTIFICA:
-                  </p>
-
-                  <p>
-                    Haber evaluado en consulta optométrica y examen clínico especializado a el/la paciente:
-                  </p>
-
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center my-3 font-medium">
-                    <p className="text-base font-bold text-slate-900">{nombrePaciente}</p>
-                    <p className="text-xs text-slate-600 mt-1">Cédula de Identidad / Pasaporte: <strong>{cedulaPaciente}</strong></p>
                   </div>
 
-                  <p>
-                    Habiéndose obtenido los siguientes resultados clínicos durante la valoración optométrica integral:
+                  <p style={{ margin: "0 0 6px 0" }}>
+                    Haber evaluado en valoración clínica optométrica integral al/a la paciente:
                   </p>
 
-                  <ul className="list-disc pl-6 space-y-1 my-3">
-                    <li><strong>Agudeza Visual Sin Corrección:</strong> O.D. {avSinOD} · O.I. {avSinOI}</li>
-                    <li><strong>Agudeza Visual Con Corrección Óptica:</strong> O.D. {odAvl} · O.I. {oiAvl}</li>
-                    <li><strong>Diagnóstico Ocular:</strong> {examen.diagnostico_od || "Defecto refractivo corregible"} / {examen.diagnostico_oi || "Defecto refractivo corregible"} {examen.cie10 ? `[CIE-10: ${examen.cie10}]` : ""}</li>
-                    <li><strong>Examen Motor / Biomicroscopía:</strong> Segmento anterior y reflejos pupilares sin hallazgos patológicos agudos.</li>
-                  </ul>
+                  <div
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      border: "1px solid #cbd5e1",
+                      borderRadius: "6px",
+                      padding: "8px 12px",
+                      textAlign: "center",
+                      margin: "6px 0 10px 0",
+                    }}
+                  >
+                    <div style={{ fontSize: "14px", fontWeight: 900, color: "#0f172a" }}>
+                      {nombrePaciente}
+                    </div>
+                    <div style={{ fontSize: "10px", color: "#475569", marginTop: "2px" }}>
+                      Cédula de Identidad / Pasaporte: <strong>{cedulaPaciente}</strong>
+                    </div>
+                  </div>
 
-                  <p>
-                    <strong>CONCLUSIÓN / APTITUD:</strong>{" "}
-                    {examen.tratamiento_conducta ||
-                      "El paciente se encuentra APTO para el desempeño de sus actividades cotidianas, laborales y académicas habituales con el uso debido de su compensación óptica prescrita."}
+                  <p style={{ margin: "0 0 6px 0", fontWeight: 700 }}>
+                    Habiéndose determinado los siguientes parámetros clínicos:
                   </p>
 
-                  <p className="pt-2 text-xs text-slate-600">
-                    Se extiende el presente certificado a petición de la parte interesada para los fines pertinentes que considere necesarios.
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "6px 12px",
+                      backgroundColor: "#f1f5f9",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      marginBottom: "10px",
+                      fontSize: "10.5px",
+                    }}
+                  >
+                    <div>
+                      <strong>Agudeza Visual S/C:</strong> OD: {avSinOD} | OI: {avSinOI}
+                    </div>
+                    <div>
+                      <strong>Agudeza Visual C/C:</strong> OD: {odAvl} | OI: {oiAvl}
+                    </div>
+                    <div>
+                      <strong>Refracción Compensatoria:</strong> OD: {odEsf} {odCyl} | OI: {oiEsf} {oiCyl}
+                    </div>
+                    <div>
+                      <strong>Segmento Anterior:</strong> Sin hallazgos patológicos activos
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      borderLeft: "4px solid #059669",
+                      backgroundColor: "#ecfdf5",
+                      padding: "8px 12px",
+                      borderRadius: "0 6px 6px 0",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    <div style={{ fontSize: "9.5px", fontWeight: 800, color: "#065f46", textTransform: "uppercase" }}>
+                      CONCLUSIÓN / DICTAMEN DE APTITUD
+                    </div>
+                    <div style={{ fontSize: "11px", color: "#064e3b", marginTop: "2px" }}>
+                      El/la paciente se encuentra <strong>CLÍNICAMENTE APTO(A)</strong> para desempeñar con normalidad
+                      sus actividades académicas, laborales y de conducción vehicular, cumpliendo con el uso debido de su
+                      corrección óptica prescrita.
+                    </div>
+                  </div>
+
+                  <p style={{ margin: 0, fontSize: "9px", color: "#64748b", fontStyle: "italic" }}>
+                    Se expide el presente documento a solicitud de la parte interesada para los fines legales o
+                    institucionales que correspondan.
                   </p>
                 </div>
               </div>
             )}
 
-            {/* FIRMA Y SELLO PROFESIONAL */}
-            <footer className="mt-16 pt-8 border-t border-slate-200">
-              <div className="flex justify-between items-end">
-                <div className="text-[10px] text-slate-400 space-y-0.5">
-                  <p>ID Examen: #{examen.examen_optometrico_id}</p>
-                  <p>Registro Electrónico Oficial</p>
-                  <p className="font-mono">Firma Digital Verificada</p>
-                </div>
-
-                <div className="text-center min-w-[240px]">
-                  <div className="border-b-2 border-slate-900 pb-1 mb-1 font-serif text-slate-600 italic">
-                    {nombreDoctor}
-                  </div>
-                  <p className="font-bold text-xs text-slate-900">{nombreDoctor}</p>
-                  <p className="text-[10px] text-slate-600 uppercase tracking-wider">
-                    Especialista en Optometría y Salud Visual
-                  </p>
-                  <p className="text-[10px] text-slate-500">Reg. Profesional: 17-OPT-8924</p>
-                </div>
+            {/* 5. FIRMA DEL OPTÓMETRA Y PIE DE PÁGINA */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-end",
+                marginTop: "20px",
+                paddingTop: "12px",
+                borderTop: "1px solid #e2e8f0",
+              }}
+            >
+              <div style={{ fontSize: "8.5px", color: "#64748b", lineHeight: "1.4" }}>
+                <div>Registro Electrónico Oficial: <strong>#VT-{examen.examen_optometrico_id}</strong></div>
+                <div>Firma Digital y Certificado Validado en Servidor Clínico</div>
+                <div>Fecha de Certificación: {formatFechaClinica(examen.examen_fecha)}</div>
               </div>
-            </footer>
+
+              <div style={{ textAlign: "center", minWidth: "220px" }}>
+                <div
+                  style={{
+                    borderBottom: "1.5px solid #0f172a",
+                    marginBottom: "4px",
+                    paddingBottom: "2px",
+                    fontFamily: "Georgia, serif",
+                    fontStyle: "italic",
+                    fontSize: "14px",
+                    color: "#0891b2",
+                  }}
+                >
+                  {nombreDoctor}
+                </div>
+                <div style={{ fontSize: "11.5px", fontWeight: 800, color: "#0f172a" }}>
+                  {nombreDoctor}
+                </div>
+                <div style={{ fontSize: "8.5px", color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  Especialista en Optometría y Salud Ocular
+                </div>
+                <div style={{ fontSize: "8px", color: "#64748b" }}>Reg. Profesional MSP / Senescyt: 17-OPT-8924</div>
+              </div>
+            </div>
           </div>
         </div>
       </Modal.Body>
 
       <Modal.Footer className="border-t bg-white dark:bg-slate-900 print:hidden flex justify-between">
         <span className="text-xs text-slate-500">
-          Tip: En el diálogo de impresión puedes seleccionar &quot;Guardar como PDF&quot;.
+          Formato estándar optimizado para 1 hoja A4 / Carta.
         </span>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={onHide}
-            className="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-300 transition-all"
+            className="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-all"
           >
             Cerrar
           </button>
@@ -366,7 +826,7 @@ export const ImprimirDocumentoModal: React.FC<ImprimirDocumentoModalProps> = ({
             className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md"
           >
             <SymbolIcon name="print" />
-            Imprimir
+            Imprimir / Guardar PDF
           </button>
         </div>
       </Modal.Footer>
